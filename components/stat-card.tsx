@@ -54,23 +54,23 @@ interface GradientStatCardProps {
 export const GradientStatCard = memo(function GradientStatCard({ title, value, icon: Icon, gradient }: GradientStatCardProps) {
   return (
     <div className={cn(
-      'rounded-xl p-4 sm:p-5 md:p-6 card-hover relative overflow-hidden text-white',
+      'rounded-xl p-4 sm:p-5 md:p-6 card-hover relative overflow-hidden',
       gradient
     )}>
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-3 sm:mb-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
-            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-current/10 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-current" />
           </div>
         </div>
         
-        <p className="text-xs sm:text-sm font-medium text-white/80 mb-1">{title}</p>
-        <h3 className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight text-white">{value}</h3>
+        <p className="text-xs sm:text-sm font-medium text-current/80 mb-1">{title}</p>
+        <h3 className="text-2xl sm:text-3xl font-bold tabular-nums tracking-tight text-current">{value}</h3>
       </div>
 
       {/* Decorative circles */}
-      <div className="absolute -right-4 -bottom-4 w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-full blur-2xl"></div>
-      <div className="absolute -left-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-full blur-2xl"></div>
+      <div className="absolute -right-4 -bottom-4 w-20 h-20 sm:w-24 sm:h-24 bg-current/10 rounded-full blur-2xl"></div>
+      <div className="absolute -left-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-current/10 rounded-full blur-2xl"></div>
     </div>
   );
 });

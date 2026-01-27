@@ -106,7 +106,7 @@ export function Sidebar({ items, logo, footer }: SidebarProps) {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group',
                   isActive
-                    ? 'bg-primary text-white shadow-md'
+                    ? 'bg-primary text-primary-foreground shadow-md'
                     : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
                 )}
               >
