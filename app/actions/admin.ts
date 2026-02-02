@@ -17,13 +17,25 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
     return { error: 'Unauthorized: Only superusers can create admins.' };
   }
 
+  // Admin details
   const email = formData.get('email') as string;
   const firstName = formData.get('firstName') as string;
   const lastName = formData.get('lastName') as string;
   const phone = formData.get('phone') as string;
 
+  // Gym profile details
+  const gymName = formData.get('gymName') as string;
+  const gymAddress = formData.get('gymAddress') as string;
+  const gymPhone = formData.get('gymPhone') as string;
+  const gymEmail = formData.get('gymEmail') as string;
+  const gymDescription = formData.get('gymDescription') as string;
+
   if (!email || !firstName || !lastName) {
-    return { error: 'Missing required fields' };
+    return { error: 'Missing required admin fields (name, email)' };
+  }
+
+  if (!gymName) {
+    return { error: 'Gym name is required' };
   }
 
   try {
@@ -43,7 +55,25 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
       }
     }
 
-    // Create the admin record with a placeholder clerk_id
+    // Step 1: Create the gym profile first
+    const { data: newGym, error: gymError } = await supabaseAdmin
+      .from('gyms')
+      .insert({
+        name: gymName,
+        address: gymAddress || null,
+        phone: gymPhone || null,
+        email: gymEmail || null,
+        description: gymDescription || null
+      })
+      .select()
+      .single();
+
+    if (gymError || !newGym) {
+      console.error('Error creating gym:', gymError);
+      return { error: 'Database error: Failed to create gym profile.' };
+    }
+
+    // Step 2: Create the admin record with a placeholder clerk_id
     // This allows the user to be created in Supabase BEFORE they sign up in Clerk
     // When they sign up, lib/auth.ts will find them by email and update the clerk_id
     const placeholderClerkId = `invite_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -57,17 +87,19 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
         phone,
         role: 'admin',
         clerk_id: placeholderClerkId, // Temporary ID until they sign up
-        gym_id: currentUser.gym_id, // Assign to same gym as superuser (or handle multi-gym later)
+        gym_id: newGym.id, // Link admin to their new gym
         is_active: true
       });
 
     if (insertError) {
       console.error('Error creating admin:', insertError);
+      // Rollback: Delete the gym we just created
+      await supabaseAdmin.from('gyms').delete().eq('id', newGym.id);
       return { error: 'Database error: Failed to create admin account.' };
     }
 
     // TODO: Send invitation email (e.g. via Resend or Clerk)
-    console.log(`Admin created: ${email}. Invitation logic here.`);
+    console.log(`Admin created: ${email} for gym: ${gymName}. Invitation logic here.`);
 
   } catch (error) {
     console.error('Unexpected error:', error);
@@ -77,3 +109,4 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
   revalidatePath('/superuser/admins');
   redirect('/superuser/admins');
 }
+

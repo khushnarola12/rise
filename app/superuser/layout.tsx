@@ -12,34 +12,9 @@ const sidebarItems: SidebarItem[] = [
     icon: 'LayoutDashboard',
   },
   {
-    title: 'Gym Profile',
-    href: '/superuser/gym',
-    icon: 'Building2',
-  },
-  {
     title: 'Admins',
     href: '/superuser/admins',
     icon: 'UserCog',
-  },
-  {
-    title: 'Trainers',
-    href: '/superuser/trainers',
-    icon: 'Users',
-  },
-  {
-    title: 'Members',
-    href: '/superuser/members',
-    icon: 'Users',
-  },
-  {
-    title: 'Workouts',
-    href: '/superuser/workouts',
-    icon: 'Dumbbell',
-  },
-  {
-    title: 'Diet Plans',
-    href: '/superuser/diets',
-    icon: 'Calendar',
   },
   {
     title: 'Analytics',
@@ -52,6 +27,7 @@ const sidebarItems: SidebarItem[] = [
     icon: 'Settings',
   },
 ];
+
 
 export default async function SuperuserLayout({
   children,

@@ -126,18 +126,6 @@ export default async function SuperuserDashboard() {
           color="bg-blue-500"
         />
         <QuickActionCard
-          title="Add Trainer"
-          href="/superuser/trainers"
-          icon={Users}
-          color="bg-purple-500"
-        />
-        <QuickActionCard
-          title="Add Member"
-          href="/superuser/members"
-          icon={Users}
-          color="bg-green-500"
-        />
-        <QuickActionCard
           title="View Analytics"
           href="/superuser/analytics"
           icon={TrendingUp}

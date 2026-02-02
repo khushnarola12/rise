@@ -1,11 +1,17 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { UserCog, Plus, Search, MoreVertical } from 'lucide-react';
+import { UserCog, Plus, Search, MoreVertical, Building2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AdminsPage() {
   const { data: admins } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select(`
+      *,
+      gyms:gym_id (
+        id,
+        name
+      )
+    `)
     .eq('role', 'admin')
     .order('created_at', { ascending: false });
 
@@ -14,7 +20,7 @@ export default async function AdminsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Administrators</h1>
-          <p className="text-muted-foreground">Manage gym administrators</p>
+          <p className="text-muted-foreground">Manage gym administrators and their gyms</p>
         </div>
         <Link
           href="/superuser/admins/new"
@@ -43,6 +49,7 @@ export default async function AdminsPage() {
           <thead>
             <tr className="bg-muted/50 border-b border-border text-left">
               <th className="px-6 py-4 font-medium text-muted-foreground">Name</th>
+              <th className="px-6 py-4 font-medium text-muted-foreground">Gym</th>
               <th className="px-6 py-4 font-medium text-muted-foreground">Contact</th>
               <th className="px-6 py-4 font-medium text-muted-foreground">Status</th>
               <th className="px-6 py-4 font-medium text-muted-foreground">Joined</th>
@@ -52,7 +59,7 @@ export default async function AdminsPage() {
           <tbody>
             {!admins || admins.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                   <UserCog className="w-12 h-12 mx-auto mb-3 opacity-20" />
                   <p>No administrators found</p>
                 </td>
@@ -72,6 +79,16 @@ export default async function AdminsPage() {
                         <p className="text-xs text-muted-foreground">ID: {admin.id.slice(0, 8)}...</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {admin.gyms ? (
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-foreground font-medium">{admin.gyms.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm italic">No gym assigned</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
                     <div className="flex flex-col">
@@ -105,3 +122,4 @@ export default async function AdminsPage() {
     </div>
   );
 }
+

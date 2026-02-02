@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { UserCog, ArrowLeft, Loader2, Save } from 'lucide-react';
+import { UserCog, ArrowLeft, Loader2, Save, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { createAdmin } from '@/app/actions/admin';
 
@@ -24,68 +24,141 @@ export default function NewAdminPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-foreground">Add New Admin</h1>
-          <p className="text-muted-foreground">Create a new administrator account</p>
+          <p className="text-muted-foreground">Create a new administrator with their gym</p>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-8 max-w-2xl">
-        <form action={action} className="space-y-6">
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <UserCog className="w-10 h-10 text-primary" />
+      <div className="bg-card border border-border rounded-xl p-8 max-w-3xl">
+        <form action={action} className="space-y-8">
+          {/* Admin Details Section */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <UserCog className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Admin Details</h2>
+                <p className="text-sm text-muted-foreground">Personal information of the gym owner</p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">Admin Details</p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">First Name</label>
+                <input
+                  required
+                  type="text"
+                  name="firstName"
+                  placeholder="John"
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Last Name</label>
+                <input
+                  required
+                  type="text"
+                  name="lastName"
+                  placeholder="Doe"
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email Address</label>
+                <input
+                  required
+                  type="email"
+                  name="email"
+                  placeholder="john.doe@example.com"
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground">
+                  User will sign up with this email to claim the account.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Phone Number</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="+1 (555) 000-0000"
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">First Name</label>
-              <input
-                required
-                type="text"
-                name="firstName"
-                placeholder="John"
-                className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          {/* Divider */}
+          <div className="border-t border-border" />
 
-              />
+          {/* Gym Profile Section */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-emerald-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Gym Profile</h2>
+                <p className="text-sm text-muted-foreground">Details of the gym this admin will manage</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Last Name</label>
-              <input
-                required
-                type="text"
-                name="lastName"
-                placeholder="Doe"
-                className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
 
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Gym Name *</label>
+                <input
+                  required
+                  type="text"
+                  name="gymName"
+                  placeholder="Rise Fitness Center"
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Address</label>
+                <textarea
+                  name="gymAddress"
+                  placeholder="123 Fitness Street, Gym City, GC 12345"
+                  rows={2}
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Gym Phone</label>
+                  <input
+                    type="tel"
+                    name="gymPhone"
+                    placeholder="+1 (555) 123-4567"
+                    className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Gym Email</label>
+                  <input
+                    type="email"
+                    name="gymEmail"
+                    placeholder="contact@risefitness.com"
+                    className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Description</label>
+                <textarea
+                  name="gymDescription"
+                  placeholder="Premium fitness center with state-of-the-art equipment..."
+                  rows={3}
+                  className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Email Address</label>
-            <input
-              required
-              type="email"
-              name="email"
-              placeholder="john.doe@example.com"
-              className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-
-            />
-            <p className="text-xs text-muted-foreground">
-              User will need to sign up with this exact email to claim the account.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Phone Number</label>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="+1 (555) 000-0000"
-              className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-
-            />
           </div>
 
           {state?.error && (
@@ -114,7 +187,7 @@ export default function NewAdminPage() {
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  Create Admin
+                  Create Admin & Gym
                 </>
               )}
             </button>

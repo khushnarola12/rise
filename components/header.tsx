@@ -1,9 +1,20 @@
 'use client';
 
-import { UserButton } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
 import { Menu } from 'lucide-react';
 import { User } from '@/lib/supabase';
 import { ThemeToggle } from '@/components/theme-toggle';
+
+// Dynamic import UserButton to prevent hydration mismatch
+const UserButton = dynamic(
+  () => import('@clerk/nextjs').then((mod) => mod.UserButton),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-muted animate-pulse" />
+    )
+  }
+);
 
 interface HeaderProps {
   user: User;
@@ -55,3 +66,4 @@ export function Header({ user, onMenuClick }: HeaderProps) {
     </header>
   );
 }
+
