@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { UserCog, ArrowLeft, Loader2, Save, Building2 } from 'lucide-react';
+import { UserCog, ArrowLeft, Loader2, Save, Building2, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { createAdmin } from '@/app/actions/admin';
 
@@ -75,8 +75,9 @@ export default function NewAdminPage() {
                   placeholder="john.doe@example.com"
                   className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <p className="text-xs text-muted-foreground">
-                  User will sign up with this email to claim the account.
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Mail className="w-3 h-3" />
+                  An invitation email with sign-in link will be sent automatically.
                 </p>
               </div>
               <div className="space-y-2">
@@ -186,8 +187,8 @@ export default function NewAdminPage() {
                 </>
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
-                  Create Admin & Gym
+                  <Mail className="w-5 h-5" />
+                  Create Admin & Send Invite
                 </>
               )}
             </button>

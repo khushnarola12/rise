@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { UserCog, ArrowLeft, Loader2, Save } from 'lucide-react';
+import { UserCog, ArrowLeft, Loader2, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { createUser } from '@/app/actions/users';
 
@@ -71,6 +71,10 @@ export default function NewTrainerPage() {
               placeholder="trainer@rise.com"
               className="w-full p-3 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Mail className="w-3 h-3" />
+              An invitation email with sign-in link will be sent automatically.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -123,8 +127,8 @@ export default function NewTrainerPage() {
                 </>
               ) : (
                 <>
-                  <Save className="w-5 h-5" />
-                  Add Trainer
+                  <Mail className="w-5 h-5" />
+                  Add Trainer & Send Invite
                 </>
               )}
             </button>

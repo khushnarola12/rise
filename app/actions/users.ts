@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCurrentUserData } from '@/lib/auth';
 import { UserRole } from '@/lib/supabase';
+import { sendInvitationEmail } from '@/lib/email';
 
 interface CreateUserState {
   message?: string;
@@ -136,6 +137,16 @@ export async function createUser(
         user_id: newUser.id,
         salary: Number(salary)
       });
+    }
+
+    // 3. Send Invitation Email
+    const inviteResult = await sendInvitationEmail(email, role as 'trainer' | 'user', firstName, lastName);
+    
+    if (!inviteResult.success) {
+      console.warn(`User created but invitation email failed: ${inviteResult.message}`);
+      // Don't fail the operation - user is created, they can still sign up manually
+    } else {
+      console.log(`✅ ${role} created and invitation sent: ${email}`);
     }
 
   } catch (error) {

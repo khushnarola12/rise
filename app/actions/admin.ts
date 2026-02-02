@@ -4,10 +4,12 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getCurrentUserData } from '@/lib/auth';
+import { sendInvitationEmail } from '@/lib/email';
 
 interface CreateAdminState {
   message?: string;
   error?: string;
+  invitationSent?: boolean;
 }
 
 export async function createAdmin(prevState: CreateAdminState, formData: FormData): Promise<CreateAdminState> {
@@ -97,9 +99,15 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
       await supabaseAdmin.from('gyms').delete().eq('id', newGym.id);
       return { error: 'Database error: Failed to create admin account.' };
     }
-
-    // TODO: Send invitation email (e.g. via Resend or Clerk)
-    console.log(`Admin created: ${email} for gym: ${gymName}. Invitation logic here.`);
+    // Send invitation email via Clerk
+    const inviteResult = await sendInvitationEmail(email, 'admin', firstName, lastName);
+    
+    if (!inviteResult.success) {
+      console.warn(`Admin created but invitation email failed: ${inviteResult.message}`);
+      // Don't fail the whole operation - admin is created, they can still sign up manually
+    } else {
+      console.log(`✅ Admin created and invitation sent: ${email} for gym: ${gymName}`);
+    }
 
   } catch (error) {
     console.error('Unexpected error:', error);
