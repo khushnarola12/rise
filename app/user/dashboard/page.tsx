@@ -2,6 +2,7 @@ import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { StatCard, GradientStatCard } from '@/components/stat-card';
 import { User, Dumbbell, Calendar, Activity, TrendingUp, Users } from 'lucide-react';
+import { MemberQuickActions } from '@/components/member-quick-actions';
 
 export default async function UserDashboard() {
   const user = await getCurrentUserData();
@@ -99,7 +100,13 @@ export default async function UserDashboard() {
           icon={Users}
           gradient="gradient-warning"
         />
-      </div>
+        </div>
+
+      {/* Quick Actions - Self Service */}
+      <MemberQuickActions 
+        profile={profile} 
+        currentWeight={profile?.current_weight_kg}
+      />
 
       {/* Active Plans */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

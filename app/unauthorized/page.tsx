@@ -37,35 +37,35 @@ export default async function UnauthorizedPage({
   const Icon = message.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="max-w-md w-full">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl text-center">
-          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Icon className="w-10 h-10 text-red-400" />
+        <div className="bg-card border border-border rounded-xl p-8 text-center">
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Icon className="w-8 h-8 text-red-500" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-4">{message.title}</h1>
-          <p className="text-gray-300 mb-8">{message.description}</p>
+          <h1 className="text-2xl font-bold text-foreground mb-3">{message.title}</h1>
+          <p className="text-muted-foreground mb-6">{message.description}</p>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <SignOutButton>
-              <button className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 font-semibold">
+              <button className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
                 Sign Out
               </button>
             </SignOutButton>
 
             <Link
               href="/"
-              className="block w-full px-6 py-3 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all duration-300 font-semibold"
+              className="block w-full px-6 py-3 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors font-medium"
             >
               Back to Home
             </Link>
           </div>
 
           {reason === 'not_registered' && (
-            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <p className="text-sm text-blue-200">
-                <strong>Note:</strong> Only gym administrators and superusers can create new accounts.
+            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Note:</strong> Only gym administrators can create new accounts. Please contact your gym's front desk for assistance.
               </p>
             </div>
           )}

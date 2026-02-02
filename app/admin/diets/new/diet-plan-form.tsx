@@ -9,6 +9,7 @@ import { createDietPlan } from '@/app/actions/diets';
 interface DietPlanFormProps {
   gymId: string;
   createdBy: string;
+  redirectPath?: string;
 }
 
 interface Meal {
@@ -22,7 +23,7 @@ interface Meal {
   fats_g: number;
 }
 
-export default function DietPlanForm({ gymId, createdBy }: DietPlanFormProps) {
+export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/diets' }: DietPlanFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -66,7 +67,7 @@ export default function DietPlanForm({ gymId, createdBy }: DietPlanFormProps) {
       });
 
       if (result.success) {
-        router.push('/admin/diets');
+        router.push(redirectPath);
         router.refresh();
       } else {
         alert(`Failed to create diet plan: ${result.error}`);
@@ -243,7 +244,7 @@ export default function DietPlanForm({ gymId, createdBy }: DietPlanFormProps) {
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <Link
-          href="/admin/diets"
+          href={redirectPath}
           className="w-full sm:w-auto px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-muted text-foreground font-medium rounded-lg hover:bg-muted/80 transition-colors text-center touch-manipulation"
         >
           Cancel

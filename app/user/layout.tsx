@@ -36,6 +36,11 @@ const sidebarItems: SidebarItem[] = [
     href: '/user/progress',
     icon: 'TrendingUp',
   },
+  {
+    title: 'Settings',
+    href: '/user/settings',
+    icon: 'Settings',
+  },
 ];
 
 export default async function UserLayout({

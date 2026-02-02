@@ -244,6 +244,23 @@ CREATE TABLE financial_transactions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Announcements (Gym-wide notifications)
+CREATE TABLE announcements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    gym_id UUID REFERENCES gyms(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    type VARCHAR(20) DEFAULT 'info', -- 'info', 'warning', 'success', 'important'
+    created_by UUID REFERENCES users(id),
+    is_active BOOLEAN DEFAULT true,
+    starts_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    ends_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index for announcements
+CREATE INDEX idx_announcements_gym_active ON announcements(gym_id, is_active, starts_at);
+
 -- =====================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- =====================================================
@@ -393,6 +410,17 @@ CREATE POLICY "Users view logic for memberships"
 CREATE POLICY "Admins manage finances"
     ON financial_transactions FOR ALL
     USING (get_current_user_role() IN ('superuser', 'admin'));
+
+-- ANNOUNCEMENTS POLICIES
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins manage announcements"
+    ON announcements FOR ALL
+    USING (get_current_user_role() IN ('superuser', 'admin'));
+
+CREATE POLICY "Everyone in gym can view active announcements"
+    ON announcements FOR SELECT
+    USING (gym_id = get_current_user_gym_id() AND is_active = true);
 
 -- =====================================================
 -- FUNCTIONS & TRIGGERS

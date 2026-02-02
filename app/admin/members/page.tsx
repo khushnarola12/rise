@@ -81,19 +81,22 @@ export default async function AdminMembersPage() {
                 members.map((member) => (
                   <tr key={member.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                     <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
+                      <Link 
+                        href={`/admin/members/${member.id}`}
+                        className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
+                      >
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/10 rounded-full flex items-center justify-center font-bold text-blue-500 text-xs sm:text-base flex-shrink-0">
                           {member.first_name?.[0] || member.email[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground text-sm sm:text-base truncate">
+                          <p className="font-medium text-foreground text-sm sm:text-base truncate hover:text-primary">
                             {member.first_name} {member.last_name}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
-                            ID: {member.id.slice(0, 8)}...
+                            Click to manage
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-muted-foreground">
                       <div className="flex flex-col">

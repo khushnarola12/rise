@@ -51,129 +51,238 @@
     from { transform: scale(0.95); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
   }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
 }
 
-/* 
-  Theme Variables 
-  Using HSL-like values but as hex/rgb where possible for V4 color-mix compatibility.
-  Actually, for best opacity support in all browsers with Tailwind v4, 
-  we define them as raw values and let Tailwind wrap them.
-*/
-
 :root {
-  /* LIGHT MODE (Zinc/Slate) */
-  --background: #f8fafc; /* Slate 50 */
-  --foreground: #0f172a; /* Slate 900 */
+  /* LIGHT MODE */
+  --background: #f8fafc;
+  --foreground: #0f172a;
 
-  --card: rgba(255, 255, 255, 0.7);
+  --card: #ffffff;
   --card-foreground: #0f172a;
 
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  --primary: #0f172a; /* Slate 900 */
-  --primary-foreground: #f8fafc;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
 
-  --secondary: #f1f5f9; /* Slate 100 */
+  --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
 
   --muted: #f1f5f9;
-  --muted-foreground: #64748b; /* Slate 500 */
+  --muted-foreground: #64748b;
 
   --accent: #f1f5f9;
   --accent-foreground: #0f172a;
 
   --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
+  --destructive-foreground: #ffffff;
 
-  --border: #e2e8f0; /* Slate 200 */
+  --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0f172a;
+  --ring: #6366f1;
 }
 
 .dark {
-  /* DARK MODE (Deep Zinc/Black) */
-  --background: #09090b; /* Zinc 950 */
-  --foreground: #fafafa; /* Zinc 50 */
+  /* DARK MODE */
+  --background: #0a0a0b;
+  --foreground: #fafafa;
 
-  --card: rgba(24, 24, 27, 0.6); /* Zinc 950 with opacity */
+  --card: #141416;
   --card-foreground: #fafafa;
 
-  --popover: #09090b;
+  --popover: #141416;
   --popover-foreground: #fafafa;
 
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
+  --primary: #818cf8;
+  --primary-foreground: #0f172a;
 
-  --secondary: #27272a; /* Zinc 800 */
+  --secondary: #1e1e21;
   --secondary-foreground: #fafafa;
 
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa; /* Zinc 400 */
+  --muted: #1e1e21;
+  --muted-foreground: #a1a1aa;
 
-  --accent: #27272a;
+  --accent: #1e1e21;
   --accent-foreground: #fafafa;
 
-  --destructive: #7f1d1d;
-  --destructive-foreground: #fafafa;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
 
   --border: #27272a;
   --input: #27272a;
-  --ring: #d4d4d8;
+  --ring: #818cf8;
 }
 
-/* Global Styles */
+/* ==========================================
+   GLOBAL STYLES
+   ========================================== */
+
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Outfit', sans-serif;
-  font-feature-settings: 'tnum', 'ss01', 'cv11';
+  font-family: 'Outfit', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: 
-    radial-gradient(at 0% 0%, var(--primary) 0px, transparent 0%), /* Fallback/Subtle */
-    radial-gradient(at 100% 0%, transparent 0%, transparent 50%);
-  background-attachment: fixed;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Modern Pattern Overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  pointer-events: none;
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-/* Glass Utility - The user loves glassmorphism */
+/* ==========================================
+   GLASS EFFECT
+   ========================================== */
+
 .glass {
   background: var(--card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-/* Card Hover Effects */
+.dark .glass {
+  background: rgba(20, 20, 22, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+}
+
+.dark .glass-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================
+   CARD HOVER
+   ========================================== */
+
 .card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15); /* More subtle, premium shadow */
-  border-color: var(--primary); /* subtle highlight */
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.1);
 }
 
-/* Custom Scrollbar */
+.dark .card-hover:hover {
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================
+   GRADIENT UTILITIES
+   ========================================== */
+
+.gradient-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  color: white;
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  color: white;
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  color: white;
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+}
+
+.gradient-info {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  color: white;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ==========================================
+   UTILITY STYLES
+   ========================================== */
+
+.glow-sm {
+  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.3);
+}
+
+.glow-md {
+  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.4);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.animate-in {
+  animation: fade-in 0.3s ease-out, slide-up 0.4s ease-out;
+}
+
+/* ==========================================
+   LOADING SKELETON
+   ========================================== */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+.skeleton-text {
+  height: 1rem;
+  border-radius: 0.25rem;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  border-radius: 0.25rem;
+}
+
+.skeleton-card {
+  height: 120px;
+  border-radius: var(--radius);
+}
+
+/* ==========================================
+   SCROLLBAR
+   ========================================== */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -193,71 +302,51 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--foreground);
 }
 
-/* Selection */
+/* ==========================================
+   SELECTION
+   ========================================== */
+
 ::selection {
   background: var(--primary);
   color: var(--primary-foreground);
 }
 
-/* Smooth transitions for theme switching */
+/* ==========================================
+   TRANSITIONS
+   ========================================== */
+
 *, *::before, *::after {
   transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-timing-function: ease;
   transition-duration: 150ms;
 }
 
-/* Exclude transform transitions from global rule to avoid conflicts */
-/* Gradient Utilities */
-.gradient-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-foreground) 200%); /* Subtle shift */
-  /* For better visibility, let's stick to a solid dark gradient in light mode for contrast if using white text */
-  /* Actually, let's use a nice rich gradient that works in both */
-  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
-  color: white;
-}
+/* ==========================================
+   INPUT STYLES
+   ========================================== */
 
-.dark .gradient-primary {
-  background: linear-gradient(135deg, #fafafa 0%, #e4e4e7 100%);
-  color: #18181b;
-}
-
-.gradient-secondary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-}
-
-.gradient-accent {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  color: white;
-}
-
-.gradient-warning {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-}
-
-.gradient-text {
-  background: linear-gradient(to right, var(--foreground), var(--muted-foreground));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-
-.gradient-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.gradient-info {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-  color: white;
-}
-
-.gradient-border {
-  position: relative;
-  background: linear-gradient(to right, var(--border), transparent);
-  padding: 1px;
+input, textarea, select {
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  outline: none;
 }
 
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.dark input, .dark textarea, .dark select {
+  background: var(--muted);
+}
+
+/* ==========================================
+   PULSE ANIMATION FOR LOADING
+   ========================================== */
+
+.pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}

@@ -9,6 +9,7 @@ import { createWorkoutPlan } from '@/app/actions/workouts';
 interface WorkoutPlanFormProps {
   gymId: string;
   createdBy: string;
+  redirectPath?: string;
 }
 
 interface Exercise {
@@ -22,7 +23,7 @@ interface Exercise {
   video_url: string;
 }
 
-export default function WorkoutPlanForm({ gymId, createdBy }: WorkoutPlanFormProps) {
+export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/admin/workouts' }: WorkoutPlanFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -67,7 +68,7 @@ export default function WorkoutPlanForm({ gymId, createdBy }: WorkoutPlanFormPro
       });
 
       if (result.success) {
-        router.push('/admin/workouts');
+        router.push(redirectPath);
         router.refresh();
       } else {
         alert(`Failed to create workout plan: ${result.error}`);
@@ -263,7 +264,7 @@ export default function WorkoutPlanForm({ gymId, createdBy }: WorkoutPlanFormPro
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <Link
-          href="/admin/workouts"
+          href={redirectPath}
           className="w-full sm:w-auto px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-muted text-foreground font-medium rounded-lg hover:bg-muted/80 transition-colors text-center touch-manipulation"
         >
           Cancel
