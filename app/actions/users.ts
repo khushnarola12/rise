@@ -154,7 +154,10 @@ export async function createUser(
     return { error: 'An unexpected error occurred.' };
   }
 
-  const redirectPath = role === 'trainer' ? '/admin/trainers' : '/admin/members';
+  let redirectPath = '/admin/members';
+  if (role === 'trainer') redirectPath = '/admin/trainers';
+  else if (role === 'admin') redirectPath = '/superuser/admins';
+  
   revalidatePath(redirectPath);
   redirect(redirectPath);
 }
@@ -187,8 +190,12 @@ export async function deleteUser(userId: string, role: string) {
     throw new Error(`Failed to delete user: ${error.message}`);
   }
   
-  revalidatePath('/admin/trainers');
-  revalidatePath('/admin/members');
+  if (role === 'admin') {
+    revalidatePath('/superuser/admins');
+  } else {
+    revalidatePath('/admin/trainers');
+    revalidatePath('/admin/members');
+  }
 }
 
 export async function toggleUserStatus(userId: string, isActive: boolean, role: string) {
@@ -204,8 +211,12 @@ export async function toggleUserStatus(userId: string, isActive: boolean, role: 
     
   if (error) throw error;
 
-  revalidatePath('/admin/trainers');
-  revalidatePath('/admin/members');
+  if (role === 'admin') {
+    revalidatePath('/superuser/admins');
+  } else {
+    revalidatePath('/admin/trainers');
+    revalidatePath('/admin/members');
+  }
 }
 
 export async function updateUser(userId: string, formData: FormData) {
@@ -250,7 +261,10 @@ export async function updateUser(userId: string, formData: FormData) {
     }
   }
 
-  const redirectPath = role === 'trainer' ? '/admin/trainers' : '/admin/members';
+  let redirectPath = '/admin/members';
+  if (role === 'trainer') redirectPath = '/admin/trainers';
+  else if (role === 'admin') redirectPath = '/superuser/admins';
+
   revalidatePath(redirectPath);
   redirect(redirectPath);
 }

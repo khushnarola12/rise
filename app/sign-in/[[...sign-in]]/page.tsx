@@ -25,9 +25,15 @@ export default function SignInPage() {
           <SignIn 
             appearance={{
               baseTheme: dark,
+              variables: {
+                colorPrimary: '#6366f1', // Indigo-500 matching app theme
+                colorBackground: 'transparent',
+                colorInputBackground: 'transparent',
+                colorInputText: 'white',
+              },
               elements: {
                 rootBox: "w-full",
-                card: "bg-transparent shadow-none p-0",
+                card: "!bg-transparent shadow-none p-0 w-full",
                 headerTitle: "hidden",
                 headerSubtitle: "hidden",
                 formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none font-semibold",
@@ -39,7 +45,8 @@ export default function SignInPage() {
                 dividerText: "text-muted-foreground",
                 formFieldAction: "text-muted-foreground hover:text-foreground text-sm",
                 identityPreviewText: "text-foreground",
-                identityPreviewEditButton: "text-primary hover:text-primary/80"
+                identityPreviewEditButton: "text-primary hover:text-primary/80",
+                main: "gap-4"
               }
             }}
             fallbackRedirectUrl="/api/auth/callback"

@@ -1,10 +1,13 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { UserCog, Plus, Search, Building2, Mail } from 'lucide-react';
+import { UserCog, Plus, Building2, Mail } from 'lucide-react';
+import { URLSearchInput } from '@/components/url-search-input';
 import Link from 'next/link';
 import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
+import { UserActionsMenu } from '@/components/user-actions-menu';
 
-export default async function AdminsPage() {
-  const { data: admins } = await supabaseAdmin
+export default async function AdminsPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const { q } = await searchParams;
+  let query = supabaseAdmin
     .from('users')
     .select(`
       *,
@@ -13,8 +16,13 @@ export default async function AdminsPage() {
         name
       )
     `)
-    .eq('role', 'admin')
-    .order('created_at', { ascending: false });
+    .eq('role', 'admin');
+
+  if (q) {
+    query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`);
+  }
+
+  const { data: admins } = await query.order('created_at', { ascending: false });
 
   // Helper to check if user has claimed their account
   const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
@@ -35,16 +43,8 @@ export default async function AdminsPage() {
         </Link>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search admins..."
-            className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+      <div className="mb-6 max-w-md">
+        <URLSearchInput placeholder="Search admins..." />
       </div>
 
       {/* Admins List */}
@@ -132,6 +132,11 @@ export default async function AdminsPage() {
                             isPending={pending}
                           />
                         )}
+                        <UserActionsMenu 
+                          userId={admin.id}
+                          userRole="admin"
+                          isActive={admin.is_active}
+                        />
                       </div>
                     </td>
                   </tr>

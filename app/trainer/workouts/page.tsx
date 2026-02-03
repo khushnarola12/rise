@@ -1,11 +1,13 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Plus, Search, Calendar, Users, Target } from 'lucide-react';
+import { Dumbbell, Plus, Calendar, Users, Target } from 'lucide-react'; // Search removed
 import Link from 'next/link';
+import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TrainerWorkoutsPage() {
+export default async function TrainerWorkoutsPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const { q } = await searchParams;
   const user = await getCurrentUserData();
 
   if (!user) {
@@ -45,6 +47,14 @@ export default async function TrainerWorkoutsPage() {
     return acc;
   }, {}) || {};
 
+  // Filter plans based on search query
+  const filteredPlans = plans?.filter((plan) => {
+    if (!q) return true;
+    const authorName = plan.users ? `${plan.users.first_name} ${plan.users.last_name}` : '';
+    const searchString = `${plan.name} ${plan.description} ${authorName}`.toLowerCase();
+    return searchString.includes(q.toLowerCase());
+  }) || [];
+
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
       {/* Header */}
@@ -67,21 +77,14 @@ export default async function TrainerWorkoutsPage() {
       </div>
 
       {/* Search */}
-      <div className="flex gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search workout plans..."
-            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+      <div className="mb-6 max-w-md">
+        <URLSearchInput placeholder="Search workout plans..." />
       </div>
 
       {/* Workout Plans Grid */}
-      {plans && plans.length > 0 ? (
+      {filteredPlans && filteredPlans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => {
+          {filteredPlans.map((plan) => {
             const usage = usageMap[plan.id] || { total: 0, active: 0 };
             
             return (

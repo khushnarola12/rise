@@ -8,7 +8,7 @@ import { deleteUser, toggleUserStatus } from '@/app/actions/users';
 
 interface UserActionsMenuProps {
   userId: string;
-  userRole: 'trainer' | 'user';
+  userRole: 'trainer' | 'user' | 'admin';
   isActive: boolean;
 }
 
@@ -17,7 +17,9 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const basePath = userRole === 'trainer' ? '/admin/trainers' : '/admin/members';
+  let basePath = '/admin/members';
+  if (userRole === 'trainer') basePath = '/admin/trainers';
+  else if (userRole === 'admin') basePath = '/superuser/admins';
 
   async function handleDelete() {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
