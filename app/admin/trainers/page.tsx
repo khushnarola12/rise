@@ -4,10 +4,12 @@ import { Users, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { UserActionsMenu } from '@/components/user-actions-menu';
 import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
+import { URLSearchInput } from '@/components/url-search-input';
 
 // Helper to check if user has claimed their account
 const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
-export default async function AdminTrainersPage() {
+export default async function AdminTrainersPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const { q } = await searchParams;
   const user = await getCurrentUserData();
   
   if (!user?.gym_id) {
@@ -27,12 +29,17 @@ export default async function AdminTrainersPage() {
     );
   }
 
-  const { data: trainers } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('users')
     .select('*')
     .eq('role', 'trainer')
-    .eq('gym_id', user.gym_id)
-    .order('created_at', { ascending: false });
+    .eq('gym_id', user.gym_id);
+
+  if (q) {
+    query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`);
+  }
+
+  const { data: trainers } = await query.order('created_at', { ascending: false });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom">
@@ -52,14 +59,7 @@ export default async function AdminTrainersPage() {
 
       {/* Search and Filter */}
       <div className="flex gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search trainers..."
-            className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+        <URLSearchInput placeholder="Search trainers..." />
       </div>
 
       {/* Trainers List */}

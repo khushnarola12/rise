@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Dumbbell, Utensils, Scale, X, Loader2, Check, AlertCircle, ClipboardList, Clock, User, TrendingUp, Edit } from 'lucide-react';
+import { Dumbbell, Utensils, Scale, X, Loader2, Check, AlertCircle, ClipboardList, Clock, User, TrendingUp, Edit, MoreVertical } from 'lucide-react';
 import { AssignmentModal } from '@/components/assignment-modal';
 import { logMemberProgress, markAttendance, updateMemberProfile } from '@/app/actions/assignments';
 
@@ -14,6 +14,7 @@ interface TrainerMemberActionsProps {
   availableWorkouts: any[];
   availableDiets: any[];
   recentProgress: any[];
+  activeMembership?: any;
 }
 
 export function TrainerMemberActions({
@@ -25,6 +26,7 @@ export function TrainerMemberActions({
   availableWorkouts,
   availableDiets,
   recentProgress,
+  activeMembership,
 }: TrainerMemberActionsProps) {
   const [modalType, setModalType] = useState<'workout' | 'diet' | null>(null);
   const [showProgressForm, setShowProgressForm] = useState(false);
@@ -104,6 +106,18 @@ export function TrainerMemberActions({
     });
   };
 
+  // Calculate membership status
+  let daysRemaining = 0;
+  let membershipStatus = 'No Plan';
+  
+  if (activeMembership?.end_date) {
+    const end = new Date(activeMembership.end_date);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    membershipStatus = daysRemaining > 0 ? 'Active' : 'Expired';
+  }
+
   // Auto-clear messages
   if (message) {
     setTimeout(() => setMessage(null), 3000);
@@ -124,6 +138,40 @@ export function TrainerMemberActions({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Assignments Section */}
         <div className="space-y-4">
+          {/* Membership Status Card */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className={`w-5 h-5 ${
+                !activeMembership ? 'text-muted-foreground' : 
+                daysRemaining > 7 ? 'text-green-500' : 'text-red-500'
+              }`} />
+              <h3 className="font-semibold text-foreground">Membership Status ({daysRemaining > 0 ? `${daysRemaining} Days` : 'Expired'})</h3>
+            </div>
+            {activeMembership ? (
+              <div className={`p-4 rounded-lg border flex flex-col gap-1 ${
+                daysRemaining > 7 ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'
+              }`}>
+                <div className="flex justify-between items-center w-full">
+                  <span className="text-sm font-medium">Status</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    daysRemaining > 0 ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                  }`}>
+                    {membershipStatus}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center w-full mt-1">
+                   <span className="text-sm text-muted-foreground">Expires</span>
+                   <span className="text-sm font-medium">{new Date(activeMembership.end_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ) : (
+             <div className="p-4 bg-muted/30 rounded-lg border border-border flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">No active membership</span>
+             </div>
+            )}
+          </div>
+
           {/* Workout Assignment */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
@@ -135,8 +183,14 @@ export function TrainerMemberActions({
                 onClick={() => setModalType('workout')}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                <Edit className="w-4 h-4" />
-                {activeWorkout ? 'Change' : 'Assign'}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Edit className="w-4 h-4" />
+                  {activeWorkout ? 'Change' : 'Assign'}
+                </div>
+                <div className="sm:hidden flex items-center gap-1 text-xs text-primary font-medium">
+                  <span>Edit</span>
+                  <MoreVertical className="w-4 h-4" />
+                </div>
               </button>
             </div>
             {activeWorkout ? (
@@ -168,8 +222,14 @@ export function TrainerMemberActions({
                 onClick={() => setModalType('diet')}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                <Edit className="w-4 h-4" />
-                {activeDiet ? 'Change' : 'Assign'}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Edit className="w-4 h-4" />
+                  {activeDiet ? 'Change' : 'Assign'}
+                </div>
+                <div className="sm:hidden flex items-center gap-1 text-xs text-primary font-medium">
+                  <span>Edit</span>
+                  <MoreVertical className="w-4 h-4" />
+                </div>
               </button>
             </div>
             {activeDiet ? (

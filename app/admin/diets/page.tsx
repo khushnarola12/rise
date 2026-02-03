@@ -44,9 +44,11 @@ export default async function DietPlansPage() {
               <div className="h-2 bg-gradient-to-r from-green-500 to-teal-500" />
               <div className="p-6 space-y-4">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-green-500 transition-colors flex-1">
-                    {plan.name}
-                  </h3>
+                  <Link href={`/admin/diets/${plan.id}`} className="flex-1">
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-green-500 transition-colors">
+                      {plan.name}
+                    </h3>
+                  </Link>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs font-medium uppercase tracking-wider">
                       {plan.total_calories} kcal
@@ -62,6 +64,9 @@ export default async function DietPlansPage() {
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {plan.description || 'No description provided.'}
                 </p>
+                <Link href={`/admin/diets/${plan.id}`} className="text-sm font-medium text-primary hover:underline mt-2 inline-block">
+                  View Details
+                </Link>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4 border-t border-border">
                   <div className="flex items-center gap-1">

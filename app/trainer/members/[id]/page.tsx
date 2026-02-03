@@ -68,7 +68,8 @@ export default async function TrainerMemberDetailPage({ params }: PageProps) {
     { data: recentAttendance },
     { data: recentProgress },
     { data: availableWorkouts },
-    { data: availableDiets }
+    { data: availableDiets },
+    { data: activeMembership }
   ] = await Promise.all([
     supabaseAdmin
       .from('user_workout_plans')
@@ -102,6 +103,14 @@ export default async function TrainerMemberDetailPage({ params }: PageProps) {
       .from('diet_plans')
       .select('id, name, description, diet_preference, total_calories')
       .eq('gym_id', trainer.gym_id),
+    supabaseAdmin
+      .from('user_memberships')
+      .select('id, start_date, end_date')
+      .eq('user_id', id)
+      .eq('status', 'active')
+      .order('end_date', { ascending: false })
+      .limit(1)
+      .single(),
   ]);
 
   return (
@@ -185,6 +194,7 @@ export default async function TrainerMemberDetailPage({ params }: PageProps) {
         availableWorkouts={availableWorkouts || []}
         availableDiets={availableDiets || []}
         recentProgress={recentProgress || []}
+        activeMembership={activeMembership}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

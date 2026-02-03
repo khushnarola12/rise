@@ -472,6 +472,8 @@ export async function updateMemberProfile(
     health_conditions?: string;
     date_of_birth?: string;
     age?: number;
+    membership_start_date?: string;
+    membership_end_date?: string;
   }
 ) {
   const currentUser = await getCurrentUserData();
@@ -481,6 +483,7 @@ export async function updateMemberProfile(
   }
 
   try {
+    // 1. Update Profile Data
     // Check if profile exists and get current values
     const { data: existing } = await supabaseAdmin
       .from('user_profiles')
@@ -499,17 +502,56 @@ export async function updateMemberProfile(
       bmi = Math.round((weight / (heightM * heightM)) * 10) / 10;
     }
 
+    // Filter out membership dates for profile update
+    const { membership_start_date, membership_end_date, ...profileData } = data;
+
     if (existing) {
       await supabaseAdmin
         .from('user_profiles')
-        .update({ ...data, bmi })
+        .update({ ...profileData, bmi })
         .eq('user_id', memberId);
     } else {
       await supabaseAdmin.from('user_profiles').insert({
         user_id: memberId,
-        ...data,
+        ...profileData,
         bmi,
       });
+    }
+
+    // 2. Update Membership Dates (if provided)
+    // Only admins/superusers should change membership dates, but we'll allow trainer if role check passed above
+    if (membership_start_date || membership_end_date) {
+      // Find active membership
+      const { data: activeMembership } = await supabaseAdmin
+        .from('user_memberships')
+        .select('id')
+        .eq('user_id', memberId)
+        .eq('status', 'active')
+        .order('end_date', { ascending: false })
+        .limit(1)
+        .single();
+      
+      const updates: any = {};
+      if (membership_start_date) updates.start_date = membership_start_date;
+      if (membership_end_date) updates.end_date = membership_end_date;
+
+      if (activeMembership) {
+        await supabaseAdmin
+          .from('user_memberships')
+          .update(updates)
+          .eq('id', activeMembership.id);
+      } else if (membership_end_date) {
+        // Create new membership if none exists and we have an end date
+        await supabaseAdmin
+          .from('user_memberships')
+          .insert({
+            user_id: memberId,
+            start_date: membership_start_date || new Date().toISOString().split('T')[0],
+            end_date: membership_end_date,
+            status: 'active',
+            // plan_id is optional, so we can leave it null for manual memberships
+          });
+      }
     }
 
     // Revalidate all relevant paths

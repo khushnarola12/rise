@@ -45,7 +45,8 @@ export default async function AdminMemberDetailPage({ params }: PageProps) {
     { data: activeWorkout },
     { data: activeDiet },
     { data: recentProgress },
-    { data: recentAttendance }
+    { data: recentAttendance },
+    { data: activeMembership }
   ] = await Promise.all([
     supabaseAdmin
       .from('trainer_assignments')
@@ -76,7 +77,16 @@ export default async function AdminMemberDetailPage({ params }: PageProps) {
       .eq('user_id', id)
       .order('date', { ascending: false })
       .limit(10),
+    supabaseAdmin
+      .from('user_memberships')
+      .select('id, start_date, end_date')
+      .eq('user_id', id)
+      .eq('status', 'active')
+      .order('end_date', { ascending: false })
+      .limit(1)
+      .single(),
   ]);
+
 
   // Fetch available trainers, workouts, and diets for assignment
   const [
@@ -182,6 +192,7 @@ export default async function AdminMemberDetailPage({ params }: PageProps) {
         memberId={id}
         memberName={`${member.first_name} ${member.last_name}`}
         profile={profile}
+        activeMembership={activeMembership}
         trainerAssignments={trainerAssignments || []}
         activeWorkout={activeWorkout}
         activeDiet={activeDiet}

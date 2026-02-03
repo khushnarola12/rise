@@ -1,7 +1,7 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { StatCard, GradientStatCard } from '@/components/stat-card';
-import { User, Dumbbell, Calendar, Activity, TrendingUp, Users } from 'lucide-react';
+import { User, Dumbbell, Calendar, Activity, TrendingUp, Users, Clock } from 'lucide-react';
 import { MemberQuickActions } from '@/components/member-quick-actions';
 
 // Ensure fresh data on every request after revalidation
@@ -65,6 +65,24 @@ export default async function UserDashboard() {
       .limit(1)
   ]);
 
+  // Fetch active membership
+  const { data: activeMembership } = await supabaseAdmin
+    .from('user_memberships')
+    .select('*')
+    .eq('user_id', user?.id)
+    .eq('status', 'active')
+    .order('end_date', { ascending: false })
+    .limit(1)
+    .single();
+
+  let daysRemaining = 0;
+  if (activeMembership?.end_date) {
+    const end = new Date(activeMembership.end_date);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
       {/* Welcome Section */}
@@ -79,6 +97,12 @@ export default async function UserDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <GradientStatCard
+          title="Days Left"
+          value={activeMembership ? (daysRemaining > 0 ? `${daysRemaining} Days` : 'Expired') : 'No Plan'}
+          icon={Clock}
+          gradient={!activeMembership ? "gradient-neutral" : daysRemaining > 7 ? "gradient-success" : "gradient-error"}
+        />
         <GradientStatCard
           title="Current Weight"
           value={profile?.current_weight_kg ? `${profile.current_weight_kg} kg` : 'N/A'}

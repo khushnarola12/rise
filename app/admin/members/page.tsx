@@ -4,13 +4,15 @@ import { Users, Plus, Search, MoreVertical, Dumbbell } from 'lucide-react';
 import Link from 'next/link';
 import { UserActionsMenu } from '@/components/user-actions-menu';
 import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
+import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
 // Helper to check if user has claimed their account
 const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
 
-export default async function AdminMembersPage() {
+export default async function AdminMembersPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const { q } = await searchParams;
   const user = await getCurrentUserData();
   
   if (!user?.gym_id) {
@@ -27,12 +29,17 @@ export default async function AdminMembersPage() {
     );
   }
 
-  const { data: members } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('users')
     .select('*, user_profiles(*)')
     .eq('role', 'user')
-    .eq('gym_id', user.gym_id)
-    .order('created_at', { ascending: false });
+    .eq('gym_id', user.gym_id);
+
+  if (q) {
+    query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`);
+  }
+
+  const { data: members } = await query.order('created_at', { ascending: false });
 
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
@@ -52,14 +59,7 @@ export default async function AdminMembersPage() {
 
       {/* Search and Filter */}
       <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search members..."
-            className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm sm:text-base bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+        <URLSearchInput placeholder="Search members..." />
       </div>
 
       {/* Members List */}

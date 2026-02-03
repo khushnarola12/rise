@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { User, Dumbbell, Utensils, UserCheck, Plus, X, Scale, TrendingUp, Clock, Loader2, Check, AlertCircle, Calendar, ClipboardList } from 'lucide-react';
+import { User, Dumbbell, Utensils, UserCheck, Plus, X, Scale, TrendingUp, Clock, Loader2, Check, AlertCircle, Calendar, ClipboardList, MoreVertical } from 'lucide-react';
 import { AssignmentModal } from '@/components/assignment-modal';
 import { logMemberProgress, markAttendance, updateMemberProfile } from '@/app/actions/assignments';
 
@@ -17,6 +17,7 @@ interface MemberManagementClientProps {
   availableDiets: any[];
   recentProgress: any[];
   recentAttendance: any[];
+  activeMembership?: any;
 }
 
 export function MemberManagementClient({
@@ -31,6 +32,7 @@ export function MemberManagementClient({
   availableDiets,
   recentProgress,
   recentAttendance,
+  activeMembership,
 }: MemberManagementClientProps) {
   const [modalType, setModalType] = useState<'trainer' | 'workout' | 'diet' | null>(null);
   const [showProgressForm, setShowProgressForm] = useState(false);
@@ -54,6 +56,8 @@ export function MemberManagementClient({
     fitness_goal: profile?.fitness_goal || '',
     experience_level: profile?.experience_level || '',
     health_conditions: profile?.health_conditions || '',
+    membership_start_date: activeMembership?.start_date || '',
+    membership_end_date: activeMembership?.end_date || '',
   });
 
   const handleLogProgress = () => {
@@ -89,6 +93,8 @@ export function MemberManagementClient({
         fitness_goal: profileData.fitness_goal || undefined,
         experience_level: profileData.experience_level || undefined,
         health_conditions: profileData.health_conditions || undefined,
+        membership_start_date: profileData.membership_start_date || undefined,
+        membership_end_date: profileData.membership_end_date || undefined,
       });
 
       if (result.success) {
@@ -110,6 +116,18 @@ export function MemberManagementClient({
     });
   };
 
+  // Calculate membership status logic for UI
+  let daysRemaining = 0;
+  let membershipStatus = 'No Plan';
+  
+  if (activeMembership?.end_date) {
+    const end = new Date(activeMembership.end_date);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    membershipStatus = daysRemaining > 0 ? 'Active' : 'Expired';
+  }
+
   // Auto-clear messages
   if (message) {
     setTimeout(() => setMessage(null), 3000);
@@ -130,6 +148,45 @@ export function MemberManagementClient({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Assignments Section */}
         <div className="space-y-4">
+          {/* Membership Status Card */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className={`w-5 h-5 ${
+                !activeMembership ? 'text-muted-foreground' : 
+                daysRemaining > 7 ? 'text-green-500' : 'text-red-500'
+              }`} />
+              <h3 className="font-semibold text-foreground">Membership Status</h3>
+            </div>
+            {activeMembership ? (
+              <div className={`p-4 rounded-lg border flex flex-col gap-2 ${
+                daysRemaining > 7 ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'
+              }`}>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Days Remaining</span>
+                  <span className={`text-sm font-bold ${
+                    daysRemaining > 7 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {daysRemaining > 0 ? `${daysRemaining} Days` : 'Expired'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                   <span className="text-muted-foreground">End Date</span>
+                   <span className="font-medium">{new Date(activeMembership.end_date).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ) : (
+             <div className="p-4 bg-muted/50 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">No active membership found.</p>
+                <button 
+                  onClick={() => setShowProfileForm(true)}
+                  className="text-xs text-primary mt-1 hover:underline"
+                >
+                  Set dates in Edit Profile
+                </button>
+             </div>
+            )}
+          </div>
+
           {/* Trainer Assignment */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
@@ -141,8 +198,14 @@ export function MemberManagementClient({
                 onClick={() => setModalType('trainer')}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                <Plus className="w-4 h-4" />
-                {trainerAssignments.length > 0 ? 'Change' : 'Assign'}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Plus className="w-4 h-4" />
+                  {trainerAssignments.length > 0 ? 'Change' : 'Assign'}
+                </div>
+                <div className="sm:hidden flex items-center gap-1 text-xs text-primary font-medium">
+                  <span>Edit</span>
+                  <MoreVertical className="w-4 h-4" />
+                </div>
               </button>
             </div>
             {trainerAssignments.length > 0 ? (
@@ -171,8 +234,14 @@ export function MemberManagementClient({
                 onClick={() => setModalType('workout')}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                <Plus className="w-4 h-4" />
-                {activeWorkout ? 'Change' : 'Assign'}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Plus className="w-4 h-4" />
+                  {activeWorkout ? 'Change' : 'Assign'}
+                </div>
+                <div className="sm:hidden flex items-center gap-1 text-xs text-primary font-medium">
+                  <span>Edit</span>
+                  <MoreVertical className="w-4 h-4" />
+                </div>
               </button>
             </div>
             {activeWorkout ? (
@@ -204,8 +273,14 @@ export function MemberManagementClient({
                 onClick={() => setModalType('diet')}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
-                <Plus className="w-4 h-4" />
-                {activeDiet ? 'Change' : 'Assign'}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Plus className="w-4 h-4" />
+                  {activeDiet ? 'Change' : 'Assign'}
+                </div>
+                <div className="sm:hidden flex items-center gap-1 text-xs text-primary font-medium">
+                  <span>Edit</span>
+                  <MoreVertical className="w-4 h-4" />
+                </div>
               </button>
             </div>
             {activeDiet ? (
@@ -407,6 +482,34 @@ export function MemberManagementClient({
                     placeholder="Any health conditions or injuries..."
                   />
                 </div>
+                
+                <div className="pt-4 border-t border-border mt-2">
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    Membership Dates (Admin Only)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm text-muted-foreground">Start Date</label>
+                      <input
+                        type="date"
+                        value={profileData.membership_start_date}
+                        onChange={(e) => setProfileData({ ...profileData, membership_start_date: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground">End Date</label>
+                      <input
+                        type="date"
+                        value={profileData.membership_end_date}
+                        onChange={(e) => setProfileData({ ...profileData, membership_end_date: e.target.value })}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleUpdateProfile}
                   disabled={isPending}
