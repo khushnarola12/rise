@@ -92,51 +92,71 @@ export default async function TrainerDietsPage({ searchParams }: { searchParams:
                 key={plan.id}
                 className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
               >
-                <div className="h-2 bg-gradient-to-r from-green-500 to-teal-500" />
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-green-500 transition-colors">
-                      {plan.name}
-                    </h3>
-                    <span className="px-2 py-1 bg-orange-500/10 text-orange-500 rounded text-xs font-medium">
-                      {plan.total_calories} kcal
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {plan.description || 'No description provided.'}
-                  </p>
-
-                  {/* Macros */}
-                  <div className="flex gap-3">
-                    {plan.protein_grams && (
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-red-500">{plan.protein_grams}g</p>
-                        <p className="text-xs text-muted-foreground">Protein</p>
-                      </div>
-                    )}
-                    {plan.carbs_grams && (
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-yellow-600">{plan.carbs_grams}g</p>
-                        <p className="text-xs text-muted-foreground">Carbs</p>
-                      </div>
-                    )}
-                    {plan.fat_grams && (
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-green-500">{plan.fat_grams}g</p>
-                        <p className="text-xs text-muted-foreground">Fat</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {plan.diet_preference && (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs capitalize">
-                        <Apple className="w-3 h-3" />
-                        {plan.diet_preference.replace('_', ' ')}
+                  {/* Card Header Strip */}
+                  <div className={`h-2 bg-gradient-to-r ${
+                    plan.diet_preference === 'veg' 
+                      ? 'from-green-500 to-emerald-500' 
+                      : plan.diet_preference === 'non_veg'
+                        ? 'from-red-500 to-rose-500'
+                        : 'from-orange-500 to-amber-500' // Custom/Other
+                  }`} />
+                  
+                  <div className="p-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h3 className={`text-xl font-bold transition-colors ${
+                        plan.diet_preference === 'veg' 
+                          ? 'group-hover:text-green-500' 
+                          : plan.diet_preference === 'non_veg'
+                            ? 'group-hover:text-red-500'
+                            : 'group-hover:text-orange-500'
+                      }`}>
+                        {plan.name}
+                      </h3>
+                      <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs font-medium border border-border">
+                        {plan.total_calories} kcal
                       </span>
-                    )}
-                  </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {plan.description || 'No description provided.'}
+                    </p>
+
+                    {/* Macros */}
+                    <div className="flex gap-3">
+                      {plan.protein_grams && (
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-primary">{plan.protein_grams}g</p>
+                          <p className="text-xs text-muted-foreground">Protein</p>
+                        </div>
+                      )}
+                      {plan.carbs_grams && (
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-primary">{plan.carbs_grams}g</p>
+                          <p className="text-xs text-muted-foreground">Carbs</p>
+                        </div>
+                      )}
+                      {plan.fat_grams && (
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-primary">{plan.fat_grams}g</p>
+                          <p className="text-xs text-muted-foreground">Fat</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {plan.diet_preference && (
+                        <span className={`flex items-center gap-1 px-2 py-1 rounded text-xs capitalize ${
+                          plan.diet_preference === 'veg' 
+                            ? 'bg-green-500/10 text-green-500' 
+                            : plan.diet_preference === 'non_veg'
+                              ? 'bg-red-500/10 text-red-500'
+                              : 'bg-orange-500/10 text-orange-500'
+                        }`}>
+                          {plan.diet_preference === 'veg' ? <Apple className="w-3 h-3" /> : <Utensils className="w-3 h-3" />}
+                          {plan.diet_preference.replace('_', ' ')}
+                        </span>
+                      )}
+                    </div>
 
                   <div className="pt-4 border-t border-border flex items-center justify-between">
                     <div className="flex items-center gap-3 text-sm">

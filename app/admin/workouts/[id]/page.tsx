@@ -120,9 +120,9 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
                         {exercise.description}
                       </p>
                     )}
-                    {exercise.video_url && <YouTubeEmbed url={exercise.video_url} />}
                   </div>
                 </div>
+                {exercise.video_url && <YouTubeEmbed url={exercise.video_url} />}
               </div>
             ))}
           </div>

@@ -171,9 +171,9 @@ export default async function UserWorkoutPage() {
                               {exercise.description}
                             </p>
                           )}
-                          {exercise.video_url && <YouTubeEmbed url={exercise.video_url} />}
                         </div>
                       </div>
+                      {exercise.video_url && <YouTubeEmbed url={exercise.video_url} />}
                     </div>
                   ))}
                 </div>
