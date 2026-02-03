@@ -1,20 +1,27 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCurrentUserData } from '@/lib/auth';
-import { Dumbbell, Plus, Search, Calendar, Users } from 'lucide-react';
+import { Dumbbell, Plus, Calendar, Users } from 'lucide-react';
 import Link from 'next/link';
 import { PlanActionsMenu } from '@/components/plan-actions-menu';
+import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
-export default async function WorkoutsPage() {
+export default async function WorkoutsPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const { q } = await searchParams;
   const user = await getCurrentUserData();
   if (!user?.gym_id) return null;
 
-  const { data: plans } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('workout_plans')
     .select('*, users(first_name, last_name)')
-    .eq('gym_id', user.gym_id)
-    .order('created_at', { ascending: false });
+    .eq('gym_id', user.gym_id);
+
+  if (q) {
+    query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+  }
+
+  const { data: plans } = await query.order('created_at', { ascending: false });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom">
@@ -28,8 +35,11 @@ export default async function WorkoutsPage() {
           className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          Create Plan
         </Link>
+      </div>
+
+      <div className="mb-6 max-w-md">
+        <URLSearchInput placeholder="Search workout plans..." />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
