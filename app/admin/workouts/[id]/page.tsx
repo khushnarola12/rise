@@ -3,6 +3,7 @@ import { getWorkoutPlan } from '@/app/actions/workouts';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Target, PlayCircle, Dumbbell } from 'lucide-react';
 import Link from 'next/link';
+import { YouTubeEmbed } from '@/components/youtube-embed';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,19 +120,7 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
                         {exercise.description}
                       </p>
                     )}
-                    {exercise.video_url && (
-                      <div className="mt-3">
-                        <a
-                          href={exercise.video_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-600 transition-colors"
-                        >
-                          <PlayCircle className="w-3.5 h-3.5" />
-                          Watch Tutorial
-                        </a>
-                      </div>
-                    )}
+                    {exercise.video_url && <YouTubeEmbed url={exercise.video_url} />}
                   </div>
                 </div>
               </div>

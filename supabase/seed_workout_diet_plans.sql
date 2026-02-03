@@ -223,26 +223,125 @@ BEGIN
     (wp12, 'friday', 'Deadlift', 'Speed pulls', 5, 3, 90, 1, 'https://www.youtube.com/watch?v=op9kVnSso6Q'),
     (wp12, 'friday', 'Broad Jumps', 'Distance focus', 4, 5, 60, 2, 'https://www.youtube.com/watch?v=96zJo3nlmHI');
 
-    -- 13-30: More workout plans with variety
-    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template) VALUES
-    ('Bodyweight Mastery', 'Build muscle with no equipment needed.', 'beginner', 6, gym_uuid, admin_uuid, true),
-    ('Powerlifting Prep', 'Squat, bench, deadlift competition prep.', 'advanced', 12, gym_uuid, admin_uuid, true),
-    ('Muscle Endurance', 'High rep training for muscular endurance.', 'intermediate', 6, gym_uuid, admin_uuid, true),
-    ('Fat Shredder', 'Circuit training for maximum fat loss.', 'intermediate', 8, gym_uuid, admin_uuid, true),
-    ('Functional Fitness', 'Real-world strength and mobility.', 'beginner', 6, gym_uuid, admin_uuid, true),
-    ('Hypertrophy Max', 'Maximum muscle growth protocol.', 'advanced', 10, gym_uuid, admin_uuid, true),
-    ('Quick 30 Workouts', '30-minute efficient full body sessions.', 'beginner', 4, gym_uuid, admin_uuid, true),
-    ('Olympic Lifting', 'Snatch and clean & jerk technique.', 'advanced', 12, gym_uuid, admin_uuid, true),
-    ('Senior Fitness', 'Safe, effective training for 50+.', 'beginner', 8, gym_uuid, admin_uuid, true),
-    ('CrossFit Ready', 'Prepare for CrossFit-style workouts.', 'intermediate', 8, gym_uuid, admin_uuid, true),
-    ('Glute Builder', 'Targeted glute and hip development.', 'intermediate', 6, gym_uuid, admin_uuid, true),
-    ('Posture Perfect', 'Strengthen weak points, fix imbalances.', 'beginner', 8, gym_uuid, admin_uuid, true),
-    ('Weekend Warrior', 'Two-day split for busy schedules.', 'beginner', 6, gym_uuid, admin_uuid, true),
-    ('German Volume', '10x10 for massive gains.', 'advanced', 6, gym_uuid, admin_uuid, true),
-    ('Yoga Integration', 'Strength training with yoga recovery.', 'beginner', 8, gym_uuid, admin_uuid, true),
-    ('Superhero Training', 'Build a movie-star physique.', 'advanced', 12, gym_uuid, admin_uuid, true),
-    ('Morning Energizer', 'Quick AM workouts to start your day.', 'beginner', 4, gym_uuid, admin_uuid, true),
-    ('Desk Worker Rescue', 'Fix damage from sitting all day.', 'beginner', 6, gym_uuid, admin_uuid, true);
+    -- 13. Bodyweight Mastery
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Bodyweight Mastery', 'Build muscle with no equipment needed.', 'beginner', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp13;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp13, 'monday', 'Push-ups', 'Chest to floor', 4, 15, 60, 1, 'https://www.youtube.com/watch?v=IODxDxX7oi4'),
+    (wp13, 'monday', 'Air Squats', 'Full depth', 4, 30, 60, 2, 'https://www.youtube.com/watch?v=bEv6CCg2BC8'),
+    (wp13, 'monday', 'Plank', 'Hold tight', 3, 60, 45, 3, 'https://www.youtube.com/watch?v=ASdvN_XEl_c');
+
+    -- 14. Powerlifting Prep
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Powerlifting Prep', 'Squat, bench, deadlift competition prep.', 'advanced', 12, gym_uuid, admin_uuid, true) RETURNING id INTO wp14;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp14, 'monday', 'Low Bar Squat', 'Competition form', 5, 3, 240, 1, 'https://www.youtube.com/watch?v=bEv6CCg2BC8'),
+    (wp14, 'wednesday', 'Bench Press', 'Paused reps', 5, 3, 180, 1, 'https://www.youtube.com/watch?v=rT7DgCr-3pg'),
+    (wp14, 'friday', 'Deadlift', 'Heavy singles', 5, 1, 300, 1, 'https://www.youtube.com/watch?v=op9kVnSso6Q');
+
+    -- 15. Muscle Endurance
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Muscle Endurance', 'High rep training for muscular endurance.', 'intermediate', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp15;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp15, 'tuesday', 'Goblet Squat', 'Constant tension', 3, 20, 45, 1, 'https://www.youtube.com/watch?v=MxsFDhcyFyE'),
+    (wp15, 'tuesday', 'Push-ups', 'Burnout set', 3, 20, 45, 2, 'https://www.youtube.com/watch?v=IODxDxX7oi4'),
+    (wp15, 'tuesday', 'Walking Lunges', 'High rep', 3, 20, 45, 3, 'https://www.youtube.com/watch?v=L8fvypPrzzs');
+
+    -- 16. Fat Shredder
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Fat Shredder', 'Circuit training for maximum fat loss.', 'intermediate', 8, gym_uuid, admin_uuid, true) RETURNING id INTO wp16;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp16, 'thursday', 'Burpees', 'Full body cardio', 4, 15, 30, 1, 'https://www.youtube.com/watch?v=dZgVxmf6jkA'),
+    (wp16, 'thursday', 'Kettlebell Swings', 'Hinge movement', 4, 20, 30, 2, 'https://www.youtube.com/watch?v=YSxHifyI6s8'),
+    (wp16, 'thursday', 'Box Jumps', 'Explosive', 4, 12, 30, 3, 'https://www.youtube.com/watch?v=52r_Ul5k03g');
+
+    -- 17. Functional Fitness
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Functional Fitness', 'Real-world strength and mobility.', 'beginner', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp17;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp17, 'monday', 'Farmer Carry', 'Heavy DB carry', 3, 60, 60, 1, 'https://www.youtube.com/watch?v=rt1l16S-iWc'),
+    (wp17, 'monday', 'Turkish Get Up', 'Full body stability', 3, 5, 90, 2, 'https://www.youtube.com/watch?v=0bWRPC49-KI');
+
+    -- 18. Hypertrophy Max
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Hypertrophy Max', 'Maximum muscle growth protocol.', 'advanced', 10, gym_uuid, admin_uuid, true) RETURNING id INTO wp18;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp18, 'wednesday', 'Incline DB Press', 'Upper chest', 4, 10, 60, 1, 'https://www.youtube.com/watch?v=8iPEnn-ltC8'),
+    (wp18, 'wednesday', 'Lateral Raises', 'Side delt cap', 4, 15, 45, 2, 'https://www.youtube.com/watch?v=3VcKaXpzqRo');
+
+    -- 19. Quick 30
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Quick 30 Workouts', '30-minute efficient full body sessions.', 'beginner', 4, gym_uuid, admin_uuid, true) RETURNING id INTO wp19;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp19, 'friday', 'Jump Squats', 'Fast paced', 3, 15, 30, 1, 'https://www.youtube.com/watch?v=A-cFYWvaHr0'),
+    (wp19, 'friday', 'Renegade Rows', 'Core and back', 3, 10, 45, 2, 'https://www.youtube.com/watch?v=H74t1w682vw');
+
+    -- 20. Olympic Lifting
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Olympic Lifting', 'Snatch and clean & jerk technique.', 'advanced', 12, gym_uuid, admin_uuid, true) RETURNING id INTO wp20;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp20, 'monday', 'Snatch', 'Full snatch', 5, 2, 180, 1, 'https://www.youtube.com/watch?v=9xQp2sldyts'),
+    (wp20, 'wednesday', 'Clean and Jerk', 'Full clean', 5, 2, 180, 1, 'https://www.youtube.com/watch?v=8mRYYI-Q6rE');
+
+    -- 21. Senior Fitness
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Senior Fitness', 'Safe, effective training for 50+.', 'beginner', 8, gym_uuid, admin_uuid, true) RETURNING id INTO wp21;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp21, 'monday', 'Chair Squats', 'Sit to stand', 2, 10, 60, 1, 'https://www.youtube.com/watch?v=FqSg8_Wf4SY');
+
+    -- 22. CrossFit Ready
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('CrossFit Ready', 'Prepare for CrossFit-style workouts.', 'intermediate', 8, gym_uuid, admin_uuid, true) RETURNING id INTO wp22;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp22, 'tuesday', 'Thrusters', 'Squat press', 4, 15, 60, 1, 'https://www.youtube.com/watch?v=L219ltL15kk');
+
+    -- 23. Glute Builder
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Glute Builder', 'Targeted glute and hip development.', 'intermediate', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp23;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp23, 'thursday', 'Hip Thrust', 'Barbell loaded', 4, 12, 90, 1, 'https://www.youtube.com/watch?v=LM8XHLYJoYs');
+
+    -- 24. Posture Perfect
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Posture Perfect', 'Strengthen weak points, fix imbalances.', 'beginner', 8, gym_uuid, admin_uuid, true) RETURNING id INTO wp24;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp24, 'wednesday', 'Face Pulls', 'Rear delts', 3, 15, 60, 1, 'https://www.youtube.com/watch?v=rep-qVOkqgk');
+
+    -- 25. Weekend Warrior
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Weekend Warrior', 'Two-day split for busy schedules.', 'beginner', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp25;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp25, 'saturday', 'Full Body Circuit', 'Compound moves', 3, 10, 60, 1, 'https://www.youtube.com/watch?v=1Sk901ZlqJs');
+
+    -- 26. German Volume
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('German Volume', '10x10 for massive gains.', 'advanced', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp26;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp26, 'monday', 'Bench Press', '10 sets of 10', 10, 10, 90, 1, 'https://www.youtube.com/watch?v=rT7DgCr-3pg');
+
+    -- 27. Yoga Integration
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Yoga Integration', 'Strength training with yoga recovery.', 'beginner', 8, gym_uuid, admin_uuid, true) RETURNING id INTO wp27;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp27, 'sunday', 'Downward Dog', 'Stretch', 3, 60, 30, 1, 'https://www.youtube.com/watch?v=EC7RGJ975iM');
+
+    -- 28. Superhero Training
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Superhero Training', 'Build a movie-star physique.', 'advanced', 12, gym_uuid, admin_uuid, true) RETURNING id INTO wp28;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp28, 'monday', 'Incline Press', 'Upper chest', 5, 8, 90, 1, 'https://www.youtube.com/watch?v=8iPEnn-ltC8');
+
+    -- 29. Morning Energizer
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Morning Energizer', 'Quick AM workouts to start your day.', 'beginner', 4, gym_uuid, admin_uuid, true) RETURNING id INTO wp29;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp29, 'monday', 'Jumping Jacks', 'Warmup', 3, 50, 30, 1, 'https://www.youtube.com/watch?v=c4DAnQ6DtF8');
+
+    -- 30. Desk Worker Rescue
+    INSERT INTO workout_plans (name, description, difficulty, duration_weeks, gym_id, created_by, is_template)
+    VALUES ('Desk Worker Rescue', 'Fix damage from sitting all day.', 'beginner', 6, gym_uuid, admin_uuid, true) RETURNING id INTO wp30;
+    INSERT INTO workout_exercises (workout_plan_id, day, exercise_name, description, sets, reps, rest_seconds, exercise_order, video_url) VALUES
+    (wp30, 'wednesday', 'Glute Bridge', 'Activate glutes', 3, 15, 45, 1, 'https://www.youtube.com/watch?v=wPM8icPu6T8');
 
     -- =====================================================
     -- DIET PLANS (30 Plans)
