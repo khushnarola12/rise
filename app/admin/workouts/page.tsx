@@ -2,6 +2,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCurrentUserData } from '@/lib/auth';
 import { Dumbbell, Plus, Search, Calendar, Users } from 'lucide-react';
 import Link from 'next/link';
+import { PlanActionsMenu } from '@/components/plan-actions-menu';
+
+export const dynamic = 'force-dynamic';
 
 export default async function WorkoutsPage() {
   const user = await getCurrentUserData();
@@ -41,14 +44,21 @@ export default async function WorkoutsPage() {
               <div className="h-2 bg-gradient-to-r from-primary to-secondary" />
               <div className="p-6 space-y-4">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors flex-1">
                     {plan.name}
                   </h3>
-                  {plan.difficulty && (
-                    <span className="px-2 py-1 bg-muted rounded text-xs font-medium uppercase tracking-wider">
-                      {plan.difficulty}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {plan.difficulty && (
+                      <span className="px-2 py-1 bg-muted rounded text-xs font-medium uppercase tracking-wider">
+                        {plan.difficulty}
+                      </span>
+                    )}
+                    <PlanActionsMenu 
+                      planId={plan.id} 
+                      planType="workout" 
+                      planName={plan.name}
+                    />
+                  </div>
                 </div>
                 
                 <p className="text-sm text-muted-foreground line-clamp-2">
@@ -73,3 +83,4 @@ export default async function WorkoutsPage() {
     </div>
   );
 }
+

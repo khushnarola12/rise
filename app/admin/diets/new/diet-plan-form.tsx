@@ -4,12 +4,20 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Plus, Save, Trash2, Utensils } from 'lucide-react';
-import { createDietPlan } from '@/app/actions/diets';
+import { createDietPlan, updateDietPlan } from '@/app/actions/diets';
 
 interface DietPlanFormProps {
   gymId: string;
   createdBy: string;
   redirectPath?: string;
+  // Edit mode props
+  planId?: string;
+  initialData?: {
+    name: string;
+    description: string;
+    diet_preference: string;
+  };
+  initialMeals?: Meal[];
 }
 
 interface Meal {
@@ -23,10 +31,21 @@ interface Meal {
   fats_g: number;
 }
 
-export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/diets' }: DietPlanFormProps) {
+export default function DietPlanForm({ 
+  gymId, 
+  createdBy, 
+  redirectPath = '/admin/diets',
+  planId,
+  initialData,
+  initialMeals = []
+}: DietPlanFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [meals, setMeals] = useState<Meal[]>([]);
+  const [meals, setMeals] = useState<Meal[]>(
+    initialMeals.map(m => ({ ...m, id: m.id || crypto.randomUUID() }))
+  );
+  
+  const isEditMode = !!planId;
 
   const addMeal = () => {
     setMeals([
@@ -57,20 +76,24 @@ export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await createDietPlan({
+      const planData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         diet_preference: formData.get('diet_preference') as string,
         gymId,
         createdBy,
         meals,
-      });
+      };
+
+      const result = isEditMode
+        ? await updateDietPlan(planId!, planData)
+        : await createDietPlan(planData);
 
       if (result.success) {
         router.push(redirectPath);
         router.refresh();
       } else {
-        alert(`Failed to create diet plan: ${result.error}`);
+        alert(`Failed to ${isEditMode ? 'update' : 'create'} diet plan: ${result.error}`);
       }
     });
   };
@@ -88,6 +111,7 @@ export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/
               required
               type="text"
               name="name"
+              defaultValue={initialData?.name || ''}
               placeholder="e.g., High Protein Diet"
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -98,6 +122,7 @@ export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/
             <textarea
               name="description"
               rows={3}
+              defaultValue={initialData?.description || ''}
               placeholder="Describe the diet plan..."
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             />
@@ -108,6 +133,7 @@ export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/
             <select
               required
               name="diet_preference"
+              defaultValue={initialData?.diet_preference || 'veg'}
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="veg">Vegetarian</option>
@@ -257,12 +283,12 @@ export default function DietPlanForm({ gymId, createdBy, redirectPath = '/admin/
           {isPending ? (
             <>
               <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-              <span>Creating...</span>
+              <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
             </>
           ) : (
             <>
               <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Create Diet Plan</span>
+              <span>{isEditMode ? 'Update Diet Plan' : 'Create Diet Plan'}</span>
             </>
           )}
         </button>

@@ -2,6 +2,8 @@ import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Utensils, Calendar, Clock, Flame, Apple, Beef, Croissant } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function UserDietPage() {
   const user = await getCurrentUserData();
 

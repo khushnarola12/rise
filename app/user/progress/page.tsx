@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { TrendingUp, Scale, Activity, Target, Calendar, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { GradientStatCard } from '@/components/stat-card';
 
+// Ensure fresh data on every request after revalidation
+export const dynamic = 'force-dynamic';
+
 export default async function UserProgressPage() {
   const user = await getCurrentUserData();
 

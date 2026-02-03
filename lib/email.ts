@@ -23,11 +23,25 @@ export async function sendInvitationEmail(
   try {
     const clerk = await clerkClient();
     
+    // Sanitize the app URL - remove trailing slashes
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/+$/, '');
+    
+    if (!appUrl) {
+      console.error('❌ NEXT_PUBLIC_APP_URL is not configured!');
+      return {
+        success: false,
+        message: 'Server configuration error: App URL not set'
+      };
+    }
+    
+    const redirectUrl = `${appUrl}/sign-in`;
+    console.log(`📧 Sending invitation to ${email} with redirect: ${redirectUrl}`);
+    
     // Create invitation via Clerk
     // This sends an email with a sign-up link
     const invitation = await clerk.invitations.createInvitation({
       emailAddress: email,
-      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/sign-in`,
+      redirectUrl,
       publicMetadata: {
         role,
         firstName,
@@ -38,7 +52,7 @@ export async function sendInvitationEmail(
       notify: true
     });
 
-    console.log(`✉️ Invitation sent to ${email} for role: ${role}`);
+    console.log(`✉️ Invitation sent successfully to ${email} for role: ${role}, invitation ID: ${invitation.id}`);
     
     return {
       success: true,

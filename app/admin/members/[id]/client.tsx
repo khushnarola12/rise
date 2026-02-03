@@ -142,22 +142,18 @@ export function MemberManagementClient({
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
                 <Plus className="w-4 h-4" />
-                Assign
+                {trainerAssignments.length > 0 ? 'Change' : 'Assign'}
               </button>
             </div>
             {trainerAssignments.length > 0 ? (
-              <div className="space-y-2">
-                {trainerAssignments.map((assignment: any) => (
-                  <div key={assignment.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{assignment.users?.first_name} {assignment.users?.last_name}</p>
-                      <p className="text-xs text-muted-foreground">{assignment.users?.email}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-purple-500" />
+                </div>
+                <div>
+                  <p className="font-medium">{trainerAssignments[0].users?.first_name} {trainerAssignments[0].users?.last_name}</p>
+                  <p className="text-xs text-muted-foreground">{trainerAssignments[0].users?.email}</p>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">No trainer assigned</p>

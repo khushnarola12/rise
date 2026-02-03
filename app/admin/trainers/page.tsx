@@ -3,7 +3,10 @@ import { getCurrentUserData } from '@/lib/auth';
 import { Users, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { UserActionsMenu } from '@/components/user-actions-menu';
+import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
 
+// Helper to check if user has claimed their account
+const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
 export default async function AdminTrainersPage() {
   const user = await getCurrentUserData();
   
@@ -80,11 +83,16 @@ export default async function AdminTrainersPage() {
                 </td>
               </tr>
             ) : (
-              trainers.map((trainer) => (
+              trainers.map((trainer) => {
+                const pending = isPendingInvite(trainer.clerk_id);
+                
+                return (
                 <tr key={trainer.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        pending ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'
+                      }`}>
                         {trainer.first_name?.[0] || trainer.email[0].toUpperCase()}
                       </div>
                       <div>
@@ -102,26 +110,42 @@ export default async function AdminTrainersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      trainer.is_active 
-                        ? 'bg-green-500/10 text-green-500' 
-                        : 'bg-red-500/10 text-red-500'
-                    }`}>
-                      {trainer.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        trainer.is_active 
+                          ? 'bg-green-500/10 text-green-500' 
+                          : 'bg-red-500/10 text-red-500'
+                      }`}>
+                        {trainer.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      {pending && <InvitePendingBadge />}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
                     {new Date(trainer.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <UserActionsMenu 
-                      userId={trainer.id}
-                      userRole="trainer"
-                      isActive={trainer.is_active}
-                    />
+                    <div className="flex items-center justify-end gap-2">
+                      {pending && (
+                        <ResendInviteButton
+                          email={trainer.email}
+                          role="trainer"
+                          firstName={trainer.first_name || ''}
+                          lastName={trainer.last_name || ''}
+                          variant="icon"
+                          isPending={pending}
+                        />
+                      )}
+                      <UserActionsMenu 
+                        userId={trainer.id}
+                        userRole="trainer"
+                        isActive={trainer.is_active}
+                      />
+                    </div>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>

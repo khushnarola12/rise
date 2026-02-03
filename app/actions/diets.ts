@@ -73,6 +73,9 @@ export async function createDietPlan(data: CreateDietPlanData) {
     }
 
     revalidatePath('/admin/diets');
+    revalidatePath('/trainer/diets');
+    revalidatePath('/user/diet');
+    revalidatePath('/user/dashboard');
     return { success: true, planId: plan.id };
   } catch (error) {
     console.error('Error in createDietPlan:', error);
@@ -81,4 +84,129 @@ export async function createDietPlan(data: CreateDietPlanData) {
       error: error instanceof Error ? error.message : 'An unexpected error occurred' 
     };
   }
+}
+
+export async function updateDietPlan(planId: string, data: Partial<CreateDietPlanData>) {
+  try {
+    // Calculate total calories if meals are provided
+    const totalCalories = data.meals 
+      ? data.meals.reduce((sum, meal) => sum + (meal.calories || 0), 0)
+      : undefined;
+
+    const updateData: Record<string, unknown> = {
+      name: data.name,
+      description: data.description,
+      diet_preference: data.diet_preference,
+    };
+    
+    if (totalCalories !== undefined) {
+      updateData.total_calories = totalCalories;
+    }
+
+    const { error: planError } = await supabaseAdmin
+      .from('diet_plans')
+      .update(updateData)
+      .eq('id', planId);
+
+    if (planError) {
+      console.error('Error updating diet plan:', planError);
+      throw new Error(planError.message || 'Failed to update diet plan');
+    }
+
+    // If meals are provided, delete old ones and create new ones
+    if (data.meals && data.meals.length > 0) {
+      // Delete existing meals
+      await supabaseAdmin
+        .from('diet_plan_meals')
+        .delete()
+        .eq('diet_plan_id', planId);
+
+      // Insert new meals
+      const mealsData = data.meals.map((meal, index) => ({
+        diet_plan_id: planId,
+        meal_type: meal.meal_type,
+        meal_name: meal.meal_name,
+        description: meal.description,
+        calories: meal.calories,
+        protein_g: meal.protein_g,
+        carbs_g: meal.carbs_g,
+        fats_g: meal.fats_g,
+        meal_order: index + 1,
+      }));
+
+      const { error: mealsError } = await supabaseAdmin
+        .from('diet_plan_meals')
+        .insert(mealsData);
+
+      if (mealsError) {
+        console.error('Error updating meals:', mealsError);
+        throw new Error(mealsError.message || 'Failed to update meals');
+      }
+    }
+
+    revalidatePath('/admin/diets');
+    revalidatePath('/trainer/diets');
+    revalidatePath('/user/diet');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in updateDietPlan:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+    };
+  }
+}
+
+export async function deleteDietPlan(planId: string) {
+  try {
+    // First delete associated meals
+    await supabaseAdmin
+      .from('diet_plan_meals')
+      .delete()
+      .eq('diet_plan_id', planId);
+
+    // Delete any user assignments
+    await supabaseAdmin
+      .from('user_diet_plans')
+      .delete()
+      .eq('diet_plan_id', planId);
+
+    // Delete the plan
+    const { error } = await supabaseAdmin
+      .from('diet_plans')
+      .delete()
+      .eq('id', planId);
+
+    if (error) {
+      console.error('Error deleting diet plan:', error);
+      throw new Error(error.message || 'Failed to delete diet plan');
+    }
+
+    revalidatePath('/admin/diets');
+    revalidatePath('/trainer/diets');
+    revalidatePath('/user/diet');
+    revalidatePath('/user/dashboard');
+    return { success: true };
+  } catch (error) {
+    console.error('Error in deleteDietPlan:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+    };
+  }
+}
+
+export async function getDietPlan(planId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('diet_plans')
+    .select('*, diet_plan_meals(*)')
+    .eq('id', planId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching diet plan:', error);
+    return null;
+  }
+
+  return data;
 }

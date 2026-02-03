@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Dumbbell, Plus, Search, Calendar, Users, Target } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TrainerWorkoutsPage() {
   const user = await getCurrentUserData();
 
@@ -20,11 +22,11 @@ export default async function TrainerWorkoutsPage() {
     );
   }
 
-  // Fetch workout plans created by this trainer
+  // Fetch ALL workout plans in the gym (trainer can see and assign any)
   const { data: plans, error } = await supabaseAdmin
     .from('workout_plans')
-    .select('*')
-    .eq('created_by', user.id)
+    .select('*, users:created_by(first_name, last_name)')
+    .eq('gym_id', user.gym_id)
     .order('created_at', { ascending: false });
 
   // Count how many members are using each plan
@@ -126,10 +128,16 @@ export default async function TrainerWorkoutsPage() {
                   </div>
 
                   <div className="pt-4 border-t border-border flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-sm">
-                      <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-foreground font-medium">{usage.active}</span>
-                      <span className="text-muted-foreground">active users</span>
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-foreground font-medium">{usage.active}</span>
+                        <span className="text-muted-foreground">active</span>
+                      </div>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-xs text-muted-foreground">
+                        By {plan.users?.first_name || 'Admin'}
+                      </span>
                     </div>
                     <Link
                       href={`/trainer/workouts/${plan.id}`}

@@ -16,18 +16,22 @@ export async function assignTrainerToMember(trainerId: string, memberId: string)
   }
 
   try {
-    // Check if assignment already exists
+    // First, deactivate ALL existing trainer assignments for this member (enforce 1:1)
+    await supabaseAdmin
+      .from('trainer_assignments')
+      .update({ is_active: false })
+      .eq('user_id', memberId)
+      .eq('is_active', true);
+
+    // Check if this specific trainer-member assignment already exists
     const { data: existing } = await supabaseAdmin
       .from('trainer_assignments')
-      .select('id, is_active')
+      .select('id')
       .eq('trainer_id', trainerId)
       .eq('user_id', memberId)
       .single();
 
     if (existing) {
-      if (existing.is_active) {
-        return { success: false, error: 'Trainer is already assigned to this member' };
-      }
       // Reactivate existing assignment
       await supabaseAdmin
         .from('trainer_assignments')
@@ -48,6 +52,7 @@ export async function assignTrainerToMember(trainerId: string, memberId: string)
     }
 
     revalidatePath('/admin/members');
+    revalidatePath('/admin/members/[id]', 'page');
     revalidatePath('/admin/trainers');
     revalidatePath('/trainer/members');
     
@@ -356,9 +361,12 @@ export async function logMemberProgress(
       .eq('user_id', memberId);
 
     revalidatePath('/admin/members');
+    revalidatePath('/admin/members/[id]', 'page');
     revalidatePath('/trainer/members');
+    revalidatePath('/trainer/members/[id]', 'page');
     revalidatePath('/trainer/progress');
     revalidatePath('/user/progress');
+    revalidatePath('/user/profile');
     revalidatePath('/user/dashboard');
     
     return { success: true, message: 'Progress logged successfully' };
@@ -473,19 +481,23 @@ export async function updateMemberProfile(
   }
 
   try {
-    // Calculate BMI if height and weight provided
-    let bmi = null;
-    if (data.height_cm && data.current_weight_kg) {
-      const heightM = data.height_cm / 100;
-      bmi = Math.round((data.current_weight_kg / (heightM * heightM)) * 10) / 10;
-    }
-
-    // Check if profile exists
+    // Check if profile exists and get current values
     const { data: existing } = await supabaseAdmin
       .from('user_profiles')
-      .select('id')
+      .select('id, height_cm, current_weight_kg')
       .eq('user_id', memberId)
       .single();
+
+    // Get height and weight for BMI calculation (use new value or existing)
+    const height = data.height_cm || existing?.height_cm;
+    const weight = data.current_weight_kg || existing?.current_weight_kg;
+    
+    // Calculate BMI if we have both height and weight
+    let bmi = null;
+    if (height && weight) {
+      const heightM = height / 100;
+      bmi = Math.round((weight / (heightM * heightM)) * 10) / 10;
+    }
 
     if (existing) {
       await supabaseAdmin
@@ -500,9 +512,14 @@ export async function updateMemberProfile(
       });
     }
 
+    // Revalidate all relevant paths
     revalidatePath('/admin/members');
+    revalidatePath('/admin/members/[id]', 'page');
     revalidatePath('/trainer/members');
+    revalidatePath('/trainer/members/[id]', 'page');
     revalidatePath('/user/profile');
+    revalidatePath('/user/dashboard');
+    revalidatePath('/user/progress');
     
     return { success: true, message: 'Profile updated successfully' };
   } catch (error) {

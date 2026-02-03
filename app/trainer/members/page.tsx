@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Users, Search, Plus, Mail, Phone, Activity, Dumbbell, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TrainerMembersPage() {
   const user = await getCurrentUserData();
 

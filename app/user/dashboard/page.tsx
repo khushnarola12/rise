@@ -4,6 +4,9 @@ import { StatCard, GradientStatCard } from '@/components/stat-card';
 import { User, Dumbbell, Calendar, Activity, TrendingUp, Users } from 'lucide-react';
 import { MemberQuickActions } from '@/components/member-quick-actions';
 
+// Ensure fresh data on every request after revalidation
+export const dynamic = 'force-dynamic';
+
 export default async function UserDashboard() {
   const user = await getCurrentUserData();
 

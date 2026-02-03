@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Menu } from 'lucide-react';
 import { User } from '@/lib/supabase';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -18,50 +17,43 @@ const UserButton = dynamic(
 
 interface HeaderProps {
   user: User;
-  onMenuClick?: () => void;
 }
 
-export function Header({ user, onMenuClick }: HeaderProps) {
+export function Header({ user }: HeaderProps) {
   return (
-    <header className="h-14 sm:h-16 bg-card border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-14 sm:h-16 bg-card/80 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-all duration-300">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        {onMenuClick && (
-          <button
-            onClick={onMenuClick}
-            className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
-            aria-label="Toggle menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
+        {/* Welcome Message - Hidden on very small screens, shown on sm+ */}
+        <div className="hidden sm:block animate-in">
+          <h2 className="text-sm sm:text-base font-semibold text-foreground">
+            Welcome back, <span className="text-primary">{user.first_name || 'User'}</span>!
+          </h2>
+          <p className="text-xs text-muted-foreground capitalize">
+            {user.role} Dashboard
+          </p>
+        </div>
         
-        <div className="flex flex-col min-w-0 flex-1">
-          {/* Mobile Brand Name */}
-          <span className="md:hidden text-base font-bold text-foreground truncate pl-10 sm:pl-12">
-            Rise Fitness
-          </span>
-          
-          {/* Desktop Welcome Message */}
-          <div className="hidden md:block">
-            <h2 className="text-base font-semibold text-foreground">
-              Welcome back, {user.first_name || 'User'}!
-            </h2>
-            <p className="text-xs text-muted-foreground capitalize">
-              {user.role} Dashboard
-            </p>
-          </div>
+        {/* Mobile - Just show role */}
+        <div className="sm:hidden animate-in pl-12">
+          <p className="text-sm font-medium text-foreground capitalize">
+            {user.role} Dashboard
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
-        <UserButton 
-          appearance={{
-            elements: {
-              avatarBox: "w-8 h-8 sm:w-9 sm:h-9"
-            }
-          }}
-        />
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="transition-transform duration-200 hover:scale-105 active:scale-95">
+          <ThemeToggle />
+        </div>
+        <div className="transition-transform duration-200 hover:scale-105">
+          <UserButton 
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-border hover:ring-primary transition-all duration-200"
+              }
+            }}
+          />
+        </div>
       </div>
     </header>
   );

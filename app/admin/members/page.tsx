@@ -3,6 +3,12 @@ import { getCurrentUserData } from '@/lib/auth';
 import { Users, Plus, Search, MoreVertical, Dumbbell } from 'lucide-react';
 import Link from 'next/link';
 import { UserActionsMenu } from '@/components/user-actions-menu';
+import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
+
+export const dynamic = 'force-dynamic';
+
+// Helper to check if user has claimed their account
+const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
 
 export default async function AdminMembersPage() {
   const user = await getCurrentUserData();
@@ -78,14 +84,19 @@ export default async function AdminMembersPage() {
                   </td>
                 </tr>
               ) : (
-                members.map((member) => (
+                members.map((member) => {
+                  const pending = isPendingInvite(member.clerk_id);
+                  
+                  return (
                   <tr key={member.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                     <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
                       <Link 
                         href={`/admin/members/${member.id}`}
                         className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
                       >
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/10 rounded-full flex items-center justify-center font-bold text-blue-500 text-xs sm:text-base flex-shrink-0">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-base flex-shrink-0 ${
+                          pending ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'
+                        }`}>
                           {member.first_name?.[0] || member.email[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
@@ -116,23 +127,39 @@ export default async function AdminMembersPage() {
                      )}
                     </td>
                     <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
-                      <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.is_active 
-                          ? 'bg-green-500/10 text-green-500' 
-                          : 'bg-red-500/10 text-red-500'
-                      }`}>
-                        {member.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          member.is_active 
+                            ? 'bg-green-500/10 text-green-500' 
+                            : 'bg-red-500/10 text-red-500'
+                        }`}>
+                          {member.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        {pending && <InvitePendingBadge />}
+                      </div>
                     </td>
                     <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-right">
-                      <UserActionsMenu
-                        userId={member.id}
-                        userRole="user"
-                        isActive={member.is_active}
-                      />
+                      <div className="flex items-center justify-end gap-2">
+                        {pending && (
+                          <ResendInviteButton
+                            email={member.email}
+                            role="user"
+                            firstName={member.first_name || ''}
+                            lastName={member.last_name || ''}
+                            variant="icon"
+                            isPending={pending}
+                          />
+                        )}
+                        <UserActionsMenu
+                          userId={member.id}
+                          userRole="user"
+                          isActive={member.is_active}
+                        />
+                      </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

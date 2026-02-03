@@ -29,12 +29,7 @@ const sidebarItems: SidebarItem[] = [
   {
     title: 'Diet Plans',
     href: '/admin/diets',
-    icon: 'Calendar',
-  },
-  {
-    title: 'Attendance',
-    href: '/admin/attendance',
-    icon: 'ClipboardList',
+    icon: 'Utensils',
   },
   {
     title: 'Analytics',

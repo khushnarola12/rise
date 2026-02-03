@@ -34,22 +34,44 @@
   
   --radius: 0.75rem;
 
-  /* Animations */
-  --animate-fade-in: fade-in 0.3s ease-out;
-  --animate-slide-up: slide-up 0.4s ease-out;
-  --animate-scale-in: scale-in 0.2s ease-out;
+  /* Animation Tokens */
+  --animate-fade-in: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-left: slide-left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-right: slide-right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-bounce-in: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
   @keyframes slide-up {
-    from { transform: translateY(10px); opacity: 0; }
+    from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
+  @keyframes slide-down {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes slide-left {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slide-right {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
   @keyframes scale-in {
-    from { transform: scale(0.95); opacity: 0; }
+    from { transform: scale(0.9); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
   }
   @keyframes shimmer {
     0% { background-position: -200% 0; }
@@ -58,6 +80,19 @@
   @keyframes pulse-soft {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
   }
 }
 
@@ -241,15 +276,70 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hover-lift {
-  transition: transform 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-lift:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.15);
 }
 
+.dark .hover-lift:hover {
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Staggered Animation Classes */
 .animate-in {
-  animation: fade-in 0.3s ease-out, slide-up 0.4s ease-out;
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+             slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-in-delayed {
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both, 
+             slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+/* Stagger children animations */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+.stagger-children > * {
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both, 
+             slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Float animation */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Spin slow */
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Wiggle on hover */
+.hover-wiggle:hover {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+/* Scale on hover */
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
 }
 
 /* ==========================================
@@ -277,6 +367,64 @@ h1, h2, h3, h4, h5, h6 {
 .skeleton-card {
   height: 120px;
   border-radius: var(--radius);
+}
+
+/* ==========================================
+   RESPONSIVE TYPOGRAPHY
+   ========================================== */
+
+.text-responsive-xs {
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
+}
+
+.text-responsive-sm {
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1rem, 3.5vw, 1.125rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.125rem, 4vw, 1.25rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(1.5rem, 6vw, 1.875rem);
+}
+
+.text-responsive-4xl {
+  font-size: clamp(1.875rem, 7vw, 2.25rem);
+}
+
+/* ==========================================
+   RESPONSIVE SPACING
+   ========================================== */
+
+.p-responsive {
+  padding: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.px-responsive {
+  padding-left: clamp(0.75rem, 4vw, 1.5rem);
+  padding-right: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.py-responsive {
+  padding-top: clamp(0.75rem, 4vw, 1.5rem);
+  padding-bottom: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.gap-responsive {
+  gap: clamp(0.75rem, 3vw, 1.5rem);
 }
 
 /* ==========================================

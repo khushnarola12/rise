@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { GradientStatCard } from '@/components/stat-card';
 import { TrainerMemberActions } from './client';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

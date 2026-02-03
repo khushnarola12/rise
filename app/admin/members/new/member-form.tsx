@@ -87,6 +87,7 @@ export default function MemberForm({ plans }: { plans: Plan[] }) {
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-primary" />
             Membership Plan
+            <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
           </h3>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Select Plan</label>
@@ -95,13 +96,16 @@ export default function MemberForm({ plans }: { plans: Plan[] }) {
               className="w-full p-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
               defaultValue=""
             >
-              <option value="" disabled>Select a membership plan...</option>
+              <option value="">No membership plan (can be assigned later)</option>
               {plans.map((plan) => (
                 <option key={plan.id} value={plan.id}>
                   {plan.name} - ${plan.price} / {plan.duration_days} days
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground">
+              You can skip this and assign a membership plan later from the member's profile.
+            </p>
           </div>
         </div>
 

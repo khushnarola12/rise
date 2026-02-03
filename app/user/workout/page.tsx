@@ -1,6 +1,8 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Calendar, Clock, Target } from 'lucide-react';
+import { Dumbbell, Calendar, Clock, Target, PlayCircle } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export default async function UserWorkoutPage() {
   const user = await getCurrentUserData();
@@ -169,6 +171,19 @@ export default async function UserWorkoutPage() {
                             </p>
                           )}
                         </div>
+                        {exercise.video_url && (
+                          <div className="mt-3 pl-11">
+                            <a
+                              href={exercise.video_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-600 transition-colors"
+                            >
+                              <PlayCircle className="w-3.5 h-3.5" />
+                              Watch Tutorial
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

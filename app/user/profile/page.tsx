@@ -2,6 +2,9 @@ import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { User, Mail, Phone, Calendar, MapPin, Target, Activity, Scale } from 'lucide-react';
 
+// Ensure fresh data on every request after revalidation
+export const dynamic = 'force-dynamic';
+
 export default async function UserProfilePage() {
   const user = await getCurrentUserData();
 

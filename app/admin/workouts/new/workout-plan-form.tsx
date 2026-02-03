@@ -4,12 +4,21 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Plus, Save, Trash2, Dumbbell } from 'lucide-react';
-import { createWorkoutPlan } from '@/app/actions/workouts';
+import { createWorkoutPlan, updateWorkoutPlan } from '@/app/actions/workouts';
 
 interface WorkoutPlanFormProps {
   gymId: string;
   createdBy: string;
   redirectPath?: string;
+  // Edit mode props
+  planId?: string;
+  initialData?: {
+    name: string;
+    description: string;
+    difficulty: string;
+    duration_weeks: number;
+  };
+  initialExercises?: Exercise[];
 }
 
 interface Exercise {
@@ -23,10 +32,21 @@ interface Exercise {
   video_url: string;
 }
 
-export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/admin/workouts' }: WorkoutPlanFormProps) {
+export default function WorkoutPlanForm({ 
+  gymId, 
+  createdBy, 
+  redirectPath = '/admin/workouts',
+  planId,
+  initialData,
+  initialExercises = []
+}: WorkoutPlanFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [exercises, setExercises] = useState<Exercise[]>(
+    initialExercises.map(e => ({ ...e, id: e.id || crypto.randomUUID() }))
+  );
+  
+  const isEditMode = !!planId;
 
   const addExercise = () => {
     setExercises([
@@ -57,7 +77,7 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = await createWorkoutPlan({
+      const planData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         difficulty: formData.get('difficulty') as string,
@@ -65,13 +85,17 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
         gymId,
         createdBy,
         exercises,
-      });
+      };
+
+      const result = isEditMode 
+        ? await updateWorkoutPlan(planId!, planData)
+        : await createWorkoutPlan(planData);
 
       if (result.success) {
         router.push(redirectPath);
         router.refresh();
       } else {
-        alert(`Failed to create workout plan: ${result.error}`);
+        alert(`Failed to ${isEditMode ? 'update' : 'create'} workout plan: ${result.error}`);
       }
     });
   };
@@ -89,6 +113,7 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
               required
               type="text"
               name="name"
+              defaultValue={initialData?.name || ''}
               placeholder="e.g., Beginner Full Body"
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -99,6 +124,7 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
             <textarea
               name="description"
               rows={3}
+              defaultValue={initialData?.description || ''}
               placeholder="Describe the workout plan..."
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             />
@@ -109,6 +135,7 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
             <select
               required
               name="difficulty"
+              defaultValue={initialData?.difficulty || 'beginner'}
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="beginner">Beginner</option>
@@ -125,7 +152,7 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
               name="duration_weeks"
               min="1"
               max="52"
-              defaultValue="4"
+              defaultValue={initialData?.duration_weeks || 4}
               className="w-full p-2.5 sm:p-3 text-sm sm:text-base bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -277,12 +304,12 @@ export default function WorkoutPlanForm({ gymId, createdBy, redirectPath = '/adm
           {isPending ? (
             <>
               <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-              <span>Creating...</span>
+              <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
             </>
           ) : (
             <>
               <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Create Workout Plan</span>
+              <span>{isEditMode ? 'Update Workout Plan' : 'Create Workout Plan'}</span>
             </>
           )}
         </button>
