@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
           title="Subscription"
           value={daysDisplay}
           icon={Calendar}
-          gradient={isExpired ? "from-red-500 to-red-600" : (daysRemaining < 30 ? "from-orange-500 to-red-500" : "from-emerald-500 to-teal-500")}
+          gradient={isExpired ? "bg-gradient-to-br from-red-500 to-red-600" : (daysRemaining < 30 ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-gradient-to-br from-emerald-500 to-teal-500")}
         />
         <GradientStatCard
           title="Total Members"
