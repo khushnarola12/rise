@@ -15,6 +15,7 @@ interface UserActionsMenuProps {
 export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const router = useRouter();
 
   let basePath = '/admin/members';
@@ -35,10 +36,10 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
     }
   }
 
-  async function handleToggleStatus() {
+  async function handleStatusChange(newStatus: boolean) {
     setIsLoading(true);
     try {
-      await toggleUserStatus(userId, !isActive, userRole);
+      await toggleUserStatus(userId, newStatus, userRole);
       setIsOpen(false);
     } catch (error) {
       alert('Failed to update status');
@@ -47,11 +48,34 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
     }
   }
 
+  const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const MENU_HEIGHT = 180; // Approximate max height of menu
+    const MENU_WIDTH = 224;  // w-56
+    
+    // Check if there's enough space below
+    const spaceBelow = viewportHeight - rect.bottom;
+    const openUp = spaceBelow < MENU_HEIGHT;
+    
+    setMenuPosition({
+      // If opening up: Top is button top - menu height
+      // If opening down: Top is button bottom
+      top: openUp ? rect.top - MENU_HEIGHT : rect.bottom,
+      left: rect.right - MENU_WIDTH
+    });
+    
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="relative">
+    <>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 hover:bg-muted rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+        onClick={handleOpen}
+        className="p-2 hover:bg-muted rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary relative z-10"
       >
         <MoreVertical className="w-4 h-4 text-muted-foreground" />
       </button>
@@ -59,36 +83,45 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
       {isOpen && (
         <>
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-40 bg-transparent" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 z-50 mt-2 w-56 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div 
+            className="fixed z-50 w-56 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            style={{
+              top: `${menuPosition.top}px`,
+              left: `${menuPosition.left}px`
+            }}
+          >
             <div className="p-1.5 space-y-1">
               <Link
                 href={`${basePath}/${userId}/edit`}
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors"
+                onClick={() => setIsOpen(false)}
               >
                 <Pencil className="w-4 h-4" />
                 Edit Details
               </Link>
               
-              <button
-                disabled={isLoading}
-                onClick={handleToggleStatus}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors text-left"
-              >
-                {isActive ? (
-                  <>
-                    <X className="w-4 h-4 text-orange-500" />
-                    Deactivate
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 text-green-500" />
-                    Activate
-                  </>
-                )}
-              </button>
+              {isActive ? (
+                <button
+                  disabled={isLoading}
+                  onClick={() => handleStatusChange(false)}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors text-left"
+                >
+                  <X className="w-4 h-4 text-orange-500" />
+                  Deactivate
+                </button>
+              ) : (
+                <button
+                  disabled={isLoading}
+                  onClick={() => handleStatusChange(true)}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors text-left"
+                >
+                  <Check className="w-4 h-4 text-green-500" />
+                  Activate
+                </button>
+              )}
 
               <div className="h-px bg-border my-1" />
               
@@ -104,6 +137,6 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }

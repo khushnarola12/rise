@@ -79,20 +79,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
         </div>
 
         <div className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl glass-subtle">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Full Name</label>
-              <p className="text-lg font-semibold text-foreground mt-1">
-                {user.first_name} {user.last_name}
-              </p>
-            </div>
-            <div className="p-4 rounded-xl glass-subtle">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground">Role</label>
-              <p className="text-lg font-semibold text-foreground capitalize mt-1 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                {user.role}
-              </p>
-            </div>
+          <div className="p-4 rounded-xl glass-subtle">
+            <label className="text-xs uppercase tracking-wider text-muted-foreground">Full Name</label>
+            <p className="text-lg font-semibold text-foreground mt-1">
+              {user.first_name} {user.last_name}
+            </p>
           </div>
 
           <div className="p-4 rounded-xl glass-subtle">

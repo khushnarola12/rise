@@ -63,10 +63,92 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
       </div>
 
       {/* Members List */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-card border border-border rounded-xl shadow-sm pb-20">
+        
+        {/* Mobile View: Cards */}
+        <div className="md:hidden divide-y divide-border">
+          {!members || members.length === 0 ? (
+             <div className="p-8 text-center text-muted-foreground">
+               <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
+               <p className="text-sm sm:text-base">No members found. Add your first member!</p>
+             </div>
+          ) : (
+            members.map((member) => {
+              const pending = isPendingInvite(member.clerk_id);
+              return (
+                <div key={member.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <Link 
+                        href={`/admin/members/${member.id}`}
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                    >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                        pending ? 'bg-amber-500' : 'bg-blue-500'
+                      }`}>
+                        {member.first_name?.[0] || member.email[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">
+                          {member.first_name} {member.last_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[150px]">
+                           ID: {member.id.slice(0, 8)}...
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="flex items-center gap-1">
+                      {pending && (
+                         <ResendInviteButton
+                            email={member.email}
+                            role="user"
+                            firstName={member.first_name || ''}
+                            lastName={member.last_name || ''}
+                            variant="icon"
+                            isPending={pending}
+                          />
+                      )}
+                      <UserActionsMenu
+                        userId={member.id}
+                        userRole="user"
+                        isActive={member.is_active}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex flex-col text-muted-foreground">
+                       <span className="truncate">{member.email}</span>
+                       <span>{member.phone || 'No phone'}</span>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                       {member.user_profiles?.[0]?.fitness_goal && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary-dark">
+                             <Dumbbell className="w-3 h-3" />
+                             <span className="truncate max-w-[80px]">{member.user_profiles[0].fitness_goal}</span>
+                          </span>
+                       )}
+                       <div className="flex gap-1 items-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            member.is_active 
+                              ? 'bg-green-500/10 text-green-500' 
+                              : 'bg-red-500/10 text-red-500'
+                          }`}>
+                            {member.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                          {pending && <InvitePendingBadge />}
+                       </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full min-w-[640px]">
-            <thead>
+             <thead>
               <tr className="bg-muted/50 border-b border-border text-left">
                 <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm text-muted-foreground">Name</th>
                 <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 font-medium text-xs sm:text-sm text-muted-foreground">Contact</th>

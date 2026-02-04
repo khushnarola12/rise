@@ -34,7 +34,9 @@ export async function sendInvitationEmail(
       };
     }
     
-    const redirectUrl = `${appUrl}/sign-in`;
+    // The redirectUrl is where users go AFTER completing the sign-up via invitation
+    // This should be the auth callback to handle role-based redirection
+    const redirectUrl = `${appUrl}/api/auth/callback`;
     console.log(`📧 Sending invitation to ${email} with redirect: ${redirectUrl}`);
     
     // Create invitation via Clerk

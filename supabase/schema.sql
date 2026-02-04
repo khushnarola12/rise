@@ -30,6 +30,7 @@ CREATE TABLE gyms (
     email VARCHAR(255),
     logo_url TEXT,
     description TEXT,
+    subscription_expires_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

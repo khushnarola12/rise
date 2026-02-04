@@ -121,12 +121,6 @@ export default async function UserDashboard() {
           icon={Calendar}
           gradient="gradient-accent"
         />
-        <GradientStatCard
-          title="My Trainers"
-          value={trainers?.length || 0}
-          icon={Users}
-          gradient="gradient-warning"
-        />
         </div>
 
       {/* Quick Actions - Self Service */}
@@ -241,7 +235,7 @@ export default async function UserDashboard() {
       {/* My Trainers */}
       {trainers && trainers.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-6">
-          <h2 className="text-2xl font-bold text-foreground mb-6">My Trainers</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6">My Trainer</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {trainers.map((assignment: any) => (
               <div

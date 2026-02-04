@@ -14,7 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-in"
+      signInFallbackRedirectUrl="/api/auth/callback"
+      signUpFallbackRedirectUrl="/api/auth/callback"
+    >
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased" suppressHydrationWarning>
           <ThemeProvider

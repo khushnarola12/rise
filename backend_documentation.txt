@@ -1,0 +1,104 @@
+=== API ROUTES (REST) ===
+
+Method: GET
+Path: /api/settings/revenue
+Purpose: Fetch the gym global revenue per admin setting
+Auth: Authenticated (Clerk)
+
+Method: POST
+Path: /api/settings/revenue
+Purpose: Update the revenue per admin setting
+Auth: Authenticated (Clerk)
+
+Method: GET
+Path: /api/fix-empty-plans
+Purpose: Migration script to populate empty workout plans with default exercises
+Auth: Authenticated (Clerk)
+
+Method: GET
+Path: /api/auth/callback
+Purpose: Clerk authentication callback handler
+Auth: Public (Handles auth flow)
+
+
+=== SUPABASE TABLES (Direct Access via SDK) ===
+
+Method: CRUD
+Path: gyms
+Purpose: Stores gym details (name, address, logo, etc.)
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: users
+Purpose: Stores user profiles linked to Clerk IDs (roles: superuser, admin, trainer, user)
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: user_profiles
+Purpose: Stores detailed health/personal data (weight, height, goals, salary)
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: trainer_assignments
+Purpose: Links users to their assigned trainers
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: diet_plans
+Purpose: Stores diet templates and definitions
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: diet_plan_meals
+Purpose: Stores specific meals within a diet plan
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: user_diet_plans
+Purpose: Assigns diet plans to specific users with dates
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: workout_plans
+Purpose: Stores workout templates and definitions
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: workout_exercises
+Purpose: Stores specific exercises for a workout plan
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: user_workout_plans
+Purpose: Assigns workout plans to specific users with dates
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: attendance
+Purpose: Logs user check-in and check-out times
+Auth: Authenticated (RLS Policies Apply)
+
+Method: CRUD
+Path: progress_logs
+Purpose: Tracks user physical progress (weight, BMI, body fat)
+Auth: Authenticated (RLS Policies Apply)
+
+
+=== SERVER-SIDE LOGIC (Current Next.js Actions) ===
+(Note: These are internal functions. Flutter app must replicate logic using Supabase SDK or new endpoints)
+
+Function: createUser
+Purpose: Creates user, assigns membership/salary, records financial transaction, sends email invite
+Complexity: High (Includes Transaction + Email)
+
+Function: deleteUser
+Purpose: Unlinks all related records (finances, content) then deletes user
+Complexity: Medium
+
+Function: toggleUserStatus
+Purpose: Toggles is_active flag for a user
+Complexity: Low
+
+Function: updateWorkoutPlan
+Purpose: Updates plan details and replaces all exercises in a transaction-like manner
+Complexity: Medium

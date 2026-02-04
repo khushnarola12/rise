@@ -63,8 +63,82 @@ export default async function AdminTrainersPage({ searchParams }: { searchParams
       </div>
 
       {/* Trainers List */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-x-auto md:overflow-visible">
-        <table className="w-full">
+      <div className="bg-card border border-border rounded-xl shadow-sm pb-20">
+        
+        {/* Mobile View: Cards */}
+        <div className="md:hidden divide-y divide-border">
+          {!trainers || trainers.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
+              <p>No trainers found</p>
+            </div>
+          ) : (
+            trainers.map((trainer) => {
+              const pending = isPendingInvite(trainer.clerk_id);
+              return (
+                <div key={trainer.id} className="p-4 space-y-3">
+                  {/* Header: Info + Actions */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        pending ? 'bg-amber-500/10 text-amber-500' : 'bg-primary/10 text-primary'
+                      }`}>
+                        {trainer.first_name?.[0] || trainer.email[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">
+                          {trainer.first_name} {trainer.last_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">ID: {trainer.id.slice(0, 8)}...</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {pending && (
+                        <ResendInviteButton
+                          email={trainer.email}
+                          role="trainer"
+                          firstName={trainer.first_name || ''}
+                          lastName={trainer.last_name || ''}
+                          variant="icon"
+                          isPending={pending}
+                        />
+                      )}
+                      <UserActionsMenu 
+                        userId={trainer.id}
+                        userRole="trainer"
+                        isActive={trainer.is_active}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex flex-col text-muted-foreground">
+                      <span className="truncate">{trainer.email}</span>
+                      <span>{trainer.phone || 'No phone'}</span>
+                    </div>
+                    <div className="flex items-center justify-end">
+                      <div className="flex flex-col gap-1 items-end">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          trainer.is_active 
+                            ? 'bg-green-500/10 text-green-500' 
+                            : 'bg-red-500/10 text-red-500'
+                        }`}>
+                          {trainer.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        {pending && <InvitePendingBadge />}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full">
           <thead>
             <tr className="bg-muted/50 border-b border-border text-left">
               <th className="px-6 py-4 font-medium text-muted-foreground">Name</th>
@@ -149,6 +223,7 @@ export default async function AdminTrainersPage({ searchParams }: { searchParams
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

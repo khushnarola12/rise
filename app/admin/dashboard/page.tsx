@@ -12,7 +12,8 @@ export default async function AdminDashboard() {
     { count: totalTrainers },
     { count: totalWorkouts },
     { count: totalDiets },
-    { data: todayAttendance }
+    { data: todayAttendance },
+    { data: gymData }
   ] = await Promise.all([
     supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'user').eq('gym_id', user?.gym_id),
     supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'trainer').eq('gym_id', user?.gym_id),
@@ -23,8 +24,31 @@ export default async function AdminDashboard() {
       .select('*, users(first_name, last_name)')
       .eq('gym_id', user?.gym_id)
       .gte('check_in_time', new Date().toISOString().split('T')[0])
-      .order('check_in_time', { ascending: false })
+      .order('check_in_time', { ascending: false }),
+    supabaseAdmin
+      .from('gyms')
+      .select('subscription_expires_at')
+      .eq('id', user?.gym_id)
+      .single()
   ]);
+
+  // Calculate days remaining
+  let daysRemaining = 0;
+  if (gymData?.subscription_expires_at) {
+    const expires = new Date(gymData.subscription_expires_at);
+    const now = new Date();
+    const diffTime = expires.getTime() - now.getTime();
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  } else {
+    // If no expiration set, assume infinite or trial? 
+    // For now, if null, we might show "Trial" or handle gracefuly.
+    // Let's assume infinite if null (legacy gyms)
+    daysRemaining = 365; // Fallback or handle differently
+  }
+  
+  // Format display
+  const isExpired = daysRemaining <= 0;
+  const daysDisplay = isExpired ? 'Expired' : `${daysRemaining} Days`;
 
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
@@ -40,6 +64,12 @@ export default async function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <GradientStatCard
+          title="Subscription"
+          value={daysDisplay}
+          icon={Calendar}
+          gradient={isExpired ? "from-red-500 to-red-600" : (daysRemaining < 30 ? "from-orange-500 to-red-500" : "from-emerald-500 to-teal-500")}
+        />
         <GradientStatCard
           title="Total Members"
           value={totalMembers || 0}
@@ -57,12 +87,6 @@ export default async function AdminDashboard() {
           value={totalWorkouts || 0}
           icon={Dumbbell}
           gradient="gradient-accent"
-        />
-        <GradientStatCard
-          title="Diet Plans"
-          value={totalDiets || 0}
-          icon={Calendar}
-          gradient="gradient-warning"
         />
       </div>
 

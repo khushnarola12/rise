@@ -33,6 +33,29 @@ BEGIN
     END IF;
 
     -- =====================================================
+    -- CLEANUP: Remove existing template plans to prevent duplicates
+    -- =====================================================
+    RAISE NOTICE 'Cleaning up existing template plans...';
+    
+    -- Delete workout exercises for template plans
+    DELETE FROM workout_exercises WHERE workout_plan_id IN (
+        SELECT id FROM workout_plans WHERE is_template = true AND gym_id = gym_uuid
+    );
+    
+    -- Delete template workout plans
+    DELETE FROM workout_plans WHERE is_template = true AND gym_id = gym_uuid;
+    
+    -- Delete diet plan meals for template plans
+    DELETE FROM diet_plan_meals WHERE diet_plan_id IN (
+        SELECT id FROM diet_plans WHERE is_template = true AND gym_id = gym_uuid
+    );
+    
+    -- Delete template diet plans
+    DELETE FROM diet_plans WHERE is_template = true AND gym_id = gym_uuid;
+    
+    RAISE NOTICE 'Cleanup complete. Inserting fresh template plans...';
+
+    -- =====================================================
     -- WORKOUT PLANS (30 Plans)
     -- =====================================================
 

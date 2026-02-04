@@ -57,6 +57,10 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
       }
     }
 
+    // Calculate subscription expiry (1 year from now)
+    const subscriptionExpiresAt = new Date();
+    subscriptionExpiresAt.setFullYear(subscriptionExpiresAt.getFullYear() + 1);
+
     // Step 1: Create the gym profile first
     const { data: newGym, error: gymError } = await supabaseAdmin
       .from('gyms')
@@ -65,7 +69,8 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
         address: gymAddress || null,
         phone: gymPhone || null,
         email: gymEmail || null,
-        description: gymDescription || null
+        description: gymDescription || null,
+        subscription_expires_at: subscriptionExpiresAt.toISOString()
       })
       .select()
       .single();
