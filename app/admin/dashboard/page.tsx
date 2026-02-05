@@ -27,23 +27,30 @@ export default async function AdminDashboard() {
       .order('check_in_time', { ascending: false }),
     supabaseAdmin
       .from('gyms')
-      .select('subscription_expires_at')
+      .select('subscription_expires_at, created_at')
       .eq('id', user?.gym_id)
       .single()
   ]);
 
   // Calculate days remaining
   let daysRemaining = 0;
+  const now = new Date();
+  
   if (gymData?.subscription_expires_at) {
+    // Use explicit subscription expiration date
     const expires = new Date(gymData.subscription_expires_at);
-    const now = new Date();
     const diffTime = expires.getTime() - now.getTime();
     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  } else if (gymData?.created_at) {
+    // Fallback: Calculate subscription from gym creation date (1 year subscription)
+    const createdAt = new Date(gymData.created_at);
+    const expiresFromCreation = new Date(createdAt);
+    expiresFromCreation.setFullYear(expiresFromCreation.getFullYear() + 1);
+    const diffTime = expiresFromCreation.getTime() - now.getTime();
+    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } else {
-    // If no expiration set, assume infinite or trial? 
-    // For now, if null, we might show "Trial" or handle gracefuly.
-    // Let's assume infinite if null (legacy gyms)
-    daysRemaining = 365; // Fallback or handle differently
+    // No data available - show as trial/unknown
+    daysRemaining = 0;
   }
   
   // Format display

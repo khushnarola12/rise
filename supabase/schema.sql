@@ -457,7 +457,7 @@ CREATE TRIGGER update_workout_plans_updated_at BEFORE UPDATE ON workout_plans
 -- =====================================================
 
 -- Create default gym (will be updated by superuser)
-INSERT INTO gyms (name, description) VALUES 
-('Rise Fitness', 'Premium Gym Management System');
+INSERT INTO gyms (name, description, subscription_expires_at) VALUES 
+('Rise Fitness', 'Premium Gym Management System', NOW() + INTERVAL '1 year');
 
 -- Note: Superuser will be created via Clerk sync on first login
