@@ -1,6 +1,7 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Utensils, Calendar, Clock, Flame, Apple, Beef, Croissant } from 'lucide-react';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,12 +89,23 @@ export default async function UserDietPage() {
     <div className="space-y-6 animate-in fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
-          My Diet Plan
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          View your personalized nutrition plan and meal schedules
-        </p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
+              My Diet Plan
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              View your personalized nutrition plan and meal schedules
+            </p>
+          </div>
+          <Link 
+            href="/user/diet/library" 
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+          >
+            <Utensils className="w-4 h-4" />
+            Browse All Plans
+          </Link>
+        </div>
       </div>
 
       {/* Active Diet Plan */}

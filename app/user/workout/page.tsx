@@ -2,6 +2,7 @@ import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Dumbbell, Calendar, Clock, Target, PlayCircle } from 'lucide-react';
 import { YouTubeEmbed } from '@/components/youtube-embed';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,12 +82,23 @@ export default async function UserWorkoutPage() {
     <div className="space-y-6 animate-in fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
-          My Workout Plan
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          View your assigned workout routines and exercises
-        </p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
+              My Workout Plan
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              View your assigned workout routines and exercises
+            </p>
+          </div>
+          <Link 
+            href="/user/workout/library" 
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
+          >
+            <PlayCircle className="w-4 h-4" />
+            Browse All Plans
+          </Link>
+        </div>
       </div>
 
       {/* Active Workout Plan */}
