@@ -34,7 +34,7 @@ export function Header({ user }: HeaderProps) {
         </div>
         
         {/* Mobile - Just show role */}
-        <div className="sm:hidden animate-in pl-12">
+        <div className="sm:hidden animate-in">
           <p className="text-sm font-medium text-foreground capitalize">
             {user.role} Dashboard
           </p>

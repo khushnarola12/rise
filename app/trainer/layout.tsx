@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUserData } from '@/lib/auth';
 import { Sidebar, SidebarItem } from '@/components/sidebar';
+import { BottomNav } from '@/components/bottom-nav';
 import { Header } from '@/components/header';
 import { Dumbbell as DumbbellIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -67,10 +68,14 @@ export default async function TrainerLayout({
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header user={user} />
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto pb-20 md:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav items={sidebarItems} maxVisible={4} />
     </div>
   );
 }
+

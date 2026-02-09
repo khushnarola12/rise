@@ -1,6 +1,7 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { User, Mail, Phone, Calendar, MapPin, Target, Activity, Scale } from 'lucide-react';
+import { ProfileSettings } from './client';
 
 // Ensure fresh data on every request after revalidation
 export const dynamic = 'force-dynamic';
@@ -60,13 +61,13 @@ export default async function UserProfilePage() {
           My Profile
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-          View and manage your personal information
+          View your information and manage account settings
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
           <div className="bg-card border border-border rounded-xl p-6 text-center">
             <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               {user.avatar_url ? (
@@ -98,7 +99,7 @@ export default async function UserProfilePage() {
 
           {/* Trainer Info */}
           {trainerAssignment && (
-            <div className="bg-card border border-border rounded-xl p-6 mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
               <h3 className="font-semibold text-foreground mb-4">My Trainer</h3>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center">
@@ -122,7 +123,7 @@ export default async function UserProfilePage() {
           )}
         </div>
 
-        {/* Details */}
+        {/* Details & Settings */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact Information */}
           <div className="bg-card border border-border rounded-xl p-6">
@@ -230,6 +231,9 @@ export default async function UserProfilePage() {
               </div>
             </div>
           )}
+
+          {/* Settings Section (from settings page) */}
+          <ProfileSettings user={user} />
         </div>
       </div>
     </div>

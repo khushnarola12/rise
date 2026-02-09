@@ -1,7 +1,123 @@
+import { Suspense } from 'react';
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { StatCard, GradientStatCard } from '@/components/stat-card';
-import { Users, UserCog, Dumbbell, Calendar, TrendingUp, Activity } from 'lucide-react';
+import { Users, UserCog, Dumbbell, Calendar, TrendingUp, Activity, DollarSign, TrendingDown, CreditCard, Loader2 } from 'lucide-react';
+
+// Analytics data fetcher
+async function getAnalytics(gymId: string) {
+  // Attempt to use the Optimized Database Function (RPC)
+  const { data, error } = await supabaseAdmin.rpc('get_gym_analytics', { p_gym_id: gymId });
+
+  if (!error && data) {
+    return {
+      revenue: Number(data.revenue),
+      expenses: Number(data.expenses),
+      payroll: Number(data.payroll),
+      profit: Number(data.profit)
+    };
+  }
+
+  // Fallback: Client-side Aggregation (Slower, but works if SQL script not run)
+  console.warn("Using fallback analytics aggregation (Run 'analytics_optimization.sql' for speed)");
+  
+  const [financeResult, profilesResult] = await Promise.all([
+    supabaseAdmin.from('financial_transactions').select('amount, type').eq('gym_id', gymId),
+    supabaseAdmin.from('user_profiles').select('salary').not('salary', 'is', null)
+  ]);
+
+  const transactions = financeResult.data || [];
+  const profiles = profilesResult.data || [];
+
+  const revenue = transactions
+    .filter(t => t.type === 'revenue')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+  const expenses = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+  const payroll = profiles.reduce((sum, p) => sum + Number(p.salary || 0), 0);
+
+  return {
+    revenue,
+    expenses,
+    payroll,
+    profit: revenue - (expenses + payroll)
+  };
+}
+
+// Recent Transactions Component
+async function RecentTransactions({ gymId }: { gymId: string }) {
+  const { data: transactions } = await supabaseAdmin
+    .from('financial_transactions')
+    .select('id, description, category, amount, type, transaction_date')
+    .eq('gym_id', gymId)
+    .order('transaction_date', { ascending: false })
+    .limit(5);
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6">
+      <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2 text-foreground">
+        <CreditCard className="w-5 h-5 text-primary" />
+        Recent Transactions
+      </h2>
+      <div className="space-y-3">
+        {transactions && transactions.length > 0 ? (
+          transactions.map((t) => (
+            <div key={t.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-foreground text-sm sm:text-base truncate">{t.description || t.category}</p>
+                <p className="text-xs text-muted-foreground">{new Date(t.transaction_date).toLocaleDateString()}</p>
+              </div>
+              <span className={`font-bold text-sm sm:text-base whitespace-nowrap ml-2 ${t.type === 'revenue' ? 'text-green-500' : 'text-red-500'}`}>
+                {t.type === 'revenue' ? '+' : '-'}${Number(t.amount).toLocaleString()}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-muted-foreground italic text-sm">
+            No transactions recorded yet. Add members to see revenue!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Financial Analytics Summary Component
+async function FinancialSummary({ gymId }: { gymId: string }) {
+  const stats = await getAnalytics(gymId);
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <GradientStatCard
+        title="Revenue"
+        value={`$${stats.revenue.toLocaleString()}`}
+        icon={DollarSign}
+        gradient="gradient-success"
+      />
+      <GradientStatCard
+        title="Profit"
+        value={`$${stats.profit.toLocaleString()}`}
+        icon={TrendingUp}
+        gradient="gradient-info"
+      />
+      <GradientStatCard
+        title="Expenses"
+        value={`$${stats.expenses.toLocaleString()}`}
+        icon={TrendingDown}
+        gradient="gradient-warning"
+      />
+      <GradientStatCard
+        title="Payroll"
+        value={`$${stats.payroll.toLocaleString()}`}
+        icon={Users}
+        gradient="gradient-accent"
+      />
+    </div>
+  );
+}
 
 export default async function AdminDashboard() {
   const user = await getCurrentUserData();
@@ -37,23 +153,19 @@ export default async function AdminDashboard() {
   const now = new Date();
   
   if (gymData?.subscription_expires_at) {
-    // Use explicit subscription expiration date
     const expires = new Date(gymData.subscription_expires_at);
     const diffTime = expires.getTime() - now.getTime();
     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } else if (gymData?.created_at) {
-    // Fallback: Calculate subscription from gym creation date (1 year subscription)
     const createdAt = new Date(gymData.created_at);
     const expiresFromCreation = new Date(createdAt);
     expiresFromCreation.setFullYear(expiresFromCreation.getFullYear() + 1);
     const diffTime = expiresFromCreation.getTime() - now.getTime();
     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } else {
-    // No data available - show as trial/unknown
     daysRemaining = 0;
   }
   
-  // Format display
   const isExpired = daysRemaining <= 0;
   const daysDisplay = isExpired ? 'Expired' : `${daysRemaining} Days`;
 
@@ -69,8 +181,8 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+      {/* Gym Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <GradientStatCard
           title="Subscription"
           value={daysDisplay}
@@ -78,66 +190,100 @@ export default async function AdminDashboard() {
           gradient={isExpired ? "bg-gradient-to-br from-red-500 to-red-600" : (daysRemaining < 30 ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-gradient-to-br from-emerald-500 to-teal-500")}
         />
         <GradientStatCard
-          title="Total Members"
+          title="Members"
           value={totalMembers || 0}
           icon={Users}
           gradient="gradient-primary"
         />
         <GradientStatCard
-          title="Total Trainers"
+          title="Trainers"
           value={totalTrainers || 0}
           icon={UserCog}
           gradient="gradient-secondary"
         />
         <GradientStatCard
-          title="Workout Plans"
+          title="Workouts"
           value={totalWorkouts || 0}
           icon={Dumbbell}
           gradient="gradient-accent"
         />
       </div>
 
-      {/* Today's Attendance */}
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Today's Attendance</h2>
-          <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 text-primary rounded-lg font-semibold text-sm sm:text-base">
-            {todayAttendance?.length || 0} Present
-          </div>
-        </div>
-        
-        {todayAttendance && todayAttendance.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {todayAttendance.map((attendance: any) => (
-              <div
-                key={attendance.id}
-                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 rounded-lg"
-              >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-sm sm:text-base truncate">
-                    {attendance.users?.first_name} {attendance.users?.last_name}
-                  </p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {new Date(attendance.check_in_time).toLocaleTimeString()}
-                  </p>
-                </div>
-                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-              </div>
+      {/* Financial Analytics Section */}
+      <div className="space-y-3">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          Financial Overview
+        </h2>
+        <Suspense fallback={
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 sm:h-28 bg-muted/20 rounded-xl animate-pulse" />
             ))}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No attendance recorded today</p>
+        }>
+          <FinancialSummary gymId={user?.gym_id || ''} />
+        </Suspense>
+      </div>
+
+      {/* Two Column Layout: Attendance & Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {/* Today's Attendance */}
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground">Today's Attendance</h2>
+            <div className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-semibold text-sm">
+              {todayAttendance?.length || 0} Present
+            </div>
           </div>
-        )}
+          
+          {todayAttendance && todayAttendance.length > 0 ? (
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+              {todayAttendance.slice(0, 6).map((attendance: any) => (
+                <div
+                  key={attendance.id}
+                  className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                >
+                  <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">
+                      {attendance.users?.first_name} {attendance.users?.last_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(attendance.check_in_time).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">No attendance recorded today</p>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Transactions */}
+        <Suspense fallback={
+          <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6 h-[300px] animate-pulse">
+            <div className="h-6 w-48 bg-muted/40 rounded mb-4"></div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-14 bg-muted/20 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        }>
+          <RecentTransactions gymId={user?.gym_id || ''} />
+        </Suspense>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <QuickActionCard
           title="Add Trainer"
           href="/admin/trainers"
@@ -151,15 +297,15 @@ export default async function AdminDashboard() {
           color="bg-blue-500"
         />
         <QuickActionCard
-          title="Mark Attendance"
-          href="/admin/attendance"
-          icon={Activity}
+          title="Workout Plans"
+          href="/admin/workouts"
+          icon={Dumbbell}
           color="bg-green-500"
         />
         <QuickActionCard
-          title="View Analytics"
-          href="/admin/analytics"
-          icon={TrendingUp}
+          title="Diet Plans"
+          href="/admin/diets"
+          icon={Calendar}
           color="bg-orange-500"
         />
       </div>
@@ -181,9 +327,9 @@ function QuickActionCard({
   return (
     <a
       href={href}
-      className="group p-4 sm:p-5 md:p-6 bg-card border border-border rounded-xl hover:shadow-lg transition-all duration-300 card-hover"
+      className="group p-4 sm:p-5 bg-card border border-border rounded-xl hover:shadow-lg transition-all duration-300 card-hover"
     >
-      <div className={`w-10 h-10 sm:w-12 sm:h-12 ${color} rounded-lg flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+      <div className={`w-10 h-10 sm:w-12 sm:h-12 ${color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
         <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
       </div>
       <h3 className="font-semibold text-foreground text-sm sm:text-base">{title}</h3>
