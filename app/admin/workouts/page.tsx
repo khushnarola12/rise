@@ -59,13 +59,17 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: Pro
           </div>
         ) : (
           plans.map((plan, i) => (
-            <Link 
+            <div 
               key={plan.id}
-              href={`/admin/workouts/${plan.id}`}
               className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block bg-zinc-900"
             >
+               {/* Clickable Overlay */}
+               <Link href={`/admin/workouts/${plan.id}`} className="absolute inset-0 z-10">
+                 <span className="sr-only">View Details</span>
+               </Link>
+
                {/* Background Image */}
-               <div className="absolute inset-0">
+               <div className="absolute inset-0 z-0">
                  <img 
                    src={WORKOUT_IMAGES[i % WORKOUT_IMAGES.length]} 
                    alt={plan.name}
@@ -86,7 +90,7 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: Pro
                </div>
 
                {/* Content */}
-               <div className="relative z-10 h-full flex flex-col justify-end p-6">
+               <div className="relative z-10 h-full flex flex-col justify-end p-6 pointer-events-none">
                  {/* Difficulty Badge */}
                  <div className="mb-2">
                     {plan.difficulty && (
@@ -123,7 +127,7 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: Pro
                    </div>
                  </div>
                </div>
-            </Link>
+            </div>
           ))
         )}
       </div>

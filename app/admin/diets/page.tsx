@@ -95,12 +95,16 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
 
 function DietPlanCard({ plan, index }: { plan: any; index: number }) {
   return (
-    <Link 
-      href={`/admin/diets/${plan.id}`}
+    <div 
       className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block bg-zinc-900"
     >
+      {/* Clickable Overlay */}
+      <Link href={`/admin/diets/${plan.id}`} className="absolute inset-0 z-10">
+        <span className="sr-only">View Details</span>
+      </Link>
+
       {/* Background Image */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-0">
         <img 
           src={DIET_IMAGES[index % DIET_IMAGES.length]} 
           alt={plan.name}
@@ -120,7 +124,7 @@ function DietPlanCard({ plan, index }: { plan: any; index: number }) {
          </div>
       </div>
       
-      <div className="absolute top-4 left-4 z-10 flex gap-2">
+      <div className="absolute top-4 left-4 z-20 flex gap-2 pointer-events-none">
          {plan.diet_preference && (
             <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border ${
               plan.diet_preference === 'veg' 
@@ -136,7 +140,7 @@ function DietPlanCard({ plan, index }: { plan: any; index: number }) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-end p-6">
+      <div className="relative z-10 h-full flex flex-col justify-end p-6 pointer-events-none">
         <div className="mb-1">
           <span className="text-xs font-bold text-primary tracking-wide uppercase">
              {plan.total_calories} Calories
@@ -159,7 +163,7 @@ function DietPlanCard({ plan, index }: { plan: any; index: number }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
