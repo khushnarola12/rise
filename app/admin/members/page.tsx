@@ -94,6 +94,9 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
                         <p className="text-xs text-muted-foreground truncate max-w-[150px]">
                            ID: {member.id.slice(0, 8)}...
                         </p>
+                        <p className="text-xs text-primary/80 mt-1 font-medium">
+                          Tap to manage
+                        </p>
                       </div>
                     </Link>
                     <div className="flex items-center gap-1">

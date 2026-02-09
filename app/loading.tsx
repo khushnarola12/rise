@@ -1,21 +1,40 @@
-import { Loader2 } from 'lucide-react';
+'use client';
+
+import { motion } from 'framer-motion';
 
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          {/* Animated gradient ring */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-secondary to-accent animate-spin blur-sm"></div>
-          <div className="relative bg-background rounded-full p-4">
-            <Loader2 className="w-12 h-12 text-primary animate-spin" />
-          </div>
-        </div>
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-foreground mb-1">Loading...</h2>
-          <p className="text-sm text-muted-foreground">Please wait while we prepare your content</p>
-        </div>
+    <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9999]">
+      <div className="relative">
+        {/* Outline Text (Background) */}
+        <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter text-transparent opacity-20 select-none"
+            style={{ WebkitTextStroke: "2px #ffffff" }}>
+          RISE.FIT
+        </h1>
+
+        {/* Filled Text (Foreground - Animating) */}
+        <motion.div
+  initial={{ height: "0%" }}
+  animate={{ height: "100%" }}
+  transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, repeatType: "reverse", repeatDelay: 0.5 }}
+  className="absolute bottom-0 left-0 w-full overflow-hidden"
+>
+  <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter text-primary select-none whitespace-nowrap">
+    RISE.FIT
+  </h1>
+</motion.div>
       </div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="mt-8 flex items-center gap-2"
+      >
+          <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      </motion.div>
     </div>
   );
 }

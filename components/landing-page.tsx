@@ -1,260 +1,308 @@
 'use client';
 
 import Link from 'next/link';
-import { Dumbbell, Users, Calendar, TrendingUp, ArrowRight, Shield, Zap, Activity } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Dumbbell, ArrowRight, Play, CheckCircle, Smartphone, Users, Flame, Zap } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+
+const WORKOUT_IMAGES = [
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80", 
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80", 
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&q=80", 
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80",
+];
 
 export default function LandingPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring" as const,
-        stiffness: 100,
-        damping: 10,
-      },
-    },
-  };
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, [0, 300], [0, 1]);
+  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
+  const heroScale = useTransform(scrollY, [0, 500], [1, 1.1]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden relative">
-      {/* Navigation */}
-      <nav className="relative z-50 container mx-auto px-6 py-6 flex justify-between items-center">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3"
-        >
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-            <Dumbbell className="w-6 h-6" />
-          </div>
-          <span className="text-2xl font-bold tracking-tight">Rise Fitness</span>
-        </motion.div>
+    <div className="min-h-screen bg-black text-white selection:bg-primary selection:text-black overflow-x-hidden font-sans">
+      
+      {/* Sticky Navigation */}
+      <motion.nav 
+        className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md border-b border-white/5"
+        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      >
+        <div className="flex items-center gap-2">
+           <Dumbbell className="w-8 h-8 text-primary fill-primary" />
+           <span className="text-xl font-black tracking-tighter uppercase italic">RISE<span className="text-primary">.FIT</span></span>
+        </div>
         
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-white/70">
+          <Link href="#community" className="hover:text-white transition-colors">Workouts</Link>
+          <Link href="#plans" className="hover:text-white transition-colors">Plans</Link>
+          <Link href="#community" className="hover:text-white transition-colors">Community</Link>
+        </div>
+
+        <Link 
+          href="/sign-in"
+          className="px-6 py-2 bg-white text-black text-sm font-bold uppercase tracking-wider hover:bg-primary hover:scale-105 transition-all skew-x-[-12deg]"
         >
-          <Link 
-            href="/sign-in"
-            className="px-6 py-2.5 text-sm font-semibold border border-border rounded-full hover:bg-primary hover:text-primary-foreground text-muted-foreground transition-all duration-300 backdrop-blur-sm"
-          >
-            Sign In
-          </Link>
-        </motion.div>
-      </nav>
+          <span className="block skew-x-[12deg]">Login</span>
+        </Link>
+      </motion.nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 container mx-auto px-6 pt-20 pb-32 text-center">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-5xl mx-auto space-y-8"
-        >
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border text-sm text-muted-foreground mb-4">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            V2.0 is now live
-          </motion.div>
-          
-          <motion.h1 variants={itemVariants} className="text-6xl md:text-8xl font-bold tracking-tighter leading-tight">
-            Elevate Your <br />
-            <span className="gradient-text">
-              Gym Experience
-            </span>
-          </motion.h1>
-
-          <motion.p variants={itemVariants} className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
-            The ultimate gym management platform designed for modern fitness centers. 
-            Streamline operations, engage members, and drive growth.
-          </motion.p>
-
-          <motion.div variants={itemVariants} className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link 
-              href="/sign-in"
-              className="group relative px-8 py-4 bg-primary text-primary-foreground text-lg font-bold rounded-full overflow-hidden transition-transform hover:scale-105"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                Get Started Now
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Link>
-            
-            <Link 
-              href="/#features"
-              className="px-8 py-4 text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              View Features
-            </Link>
-          </motion.div>
+      <div className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-black">
+        {/* Video Background */}
+        <motion.div style={{ scale: heroScale, opacity: heroOpacity }} className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-black/50 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950/80 z-10" />
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover opacity-90"
+          >
+            <source src="https://videos.pexels.com/video-files/855828/855828-hd_1920_1080_30fps.mp4" type="video/mp4" />
+          </video>
         </motion.div>
-      </section>
 
-      {/* Dashboard Preview (Abstract) */}
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 1 }}
-        className="relative z-10 container mx-auto px-6 mb-32"
-      >
-        <div className="relative rounded-2xl border border-border bg-card/50 backdrop-blur-xl aspect-[16/9] shadow-2xl overflow-hidden p-2 md:p-4">
-          <div className="w-full h-full bg-background/50 rounded-xl border border-border/50 flex overflow-hidden">
-            {/* Fake Sidebar */}
-            <div className="w-64 border-r border-border p-4 flex flex-col gap-4 hidden md:flex bg-muted/20">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-                   <Dumbbell className="w-5 h-5" />
+        {/* Hero Content */}
+        <div className="relative z-30 text-center px-4 max-w-4xl mx-auto flex flex-col items-center justify-center h-full">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="flex flex-col items-center"
+          >
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-6 drop-shadow-2xl">
+              <span className="text-white block mb-2">Be Better</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-500">Every Day</span>
+            </h1>
+            <p className="text-base md:text-lg text-zinc-300 max-w-xl mx-auto font-light tracking-wide mb-10 leading-relaxed">
+              Experience the future of fitness. Elite training, state-of-the-art centers, and intelligent planning designed for your evolution.
+            </p>
+            
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link 
+                href="/sign-in"
+                className="group relative inline-flex items-center gap-4 px-10 py-3 text-white text-base font-bold uppercase tracking-widest overflow-hidden rounded-full border border-white/20 bg-white/5 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10 z-50"
+              >
+                <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="relative z-10 flex items-center gap-3">
+                  Start Your Journey <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Management Software Plans */}
+      <section id="plans" className="py-24 px-6 bg-zinc-950 scroll-mt-24">
+        <div className="container mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter mb-4">
+              Power Your <span className="text-primary">Business</span>
+            </h2>
+            <p className="text-zinc-400">Scalable software solutions for every stage of your fitness business.</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {/* Starter Card */}
+            <motion.div 
+              className="relative group rounded-2xl overflow-hidden"
+            >
+              <div className="absolute inset-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1574680096141-1c57c502aa8f?w=800&q=80" 
+                  alt="Starter Plan" 
+                  className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-[1500ms] ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent" />
+              </div>
+              
+              <div className="relative z-10 p-8 h-full flex flex-col">
+                <div className="mb-4">
+                   <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mb-4 backdrop-blur-md">
+                      <Smartphone className="w-6 h-6 text-blue-500" />
+                   </div>
+                   <h3 className="text-3xl font-black uppercase text-blue-500 mb-1">Starter</h3>
+                   <p className="text-sm text-zinc-400">For independent trainers.</p>
                 </div>
-                <div className="h-2 w-24 bg-muted-foreground/20 rounded-full" />
+                
+                <div className="text-4xl font-bold text-white mb-6">Free<span className="text-lg text-zinc-500 font-normal">/forever</span></div>
+                
+                <ul className="space-y-3 mb-8 text-zinc-300 flex-1">
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500" /> Up to 50 Clients</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500" /> Basic Workout Builder</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500" /> Progress Tracking</li>
+                </ul>
+
+                <button className="w-full py-4 bg-blue-600/90 text-white font-bold uppercase tracking-widest hover:bg-blue-600 backdrop-blur-sm transition-colors rounded-lg">
+                  Get Started
+                </button>
               </div>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-2">
-                  <div className="w-5 h-5 rounded bg-muted-foreground/10" />
-                  <div className="h-2 w-32 bg-muted-foreground/10 rounded-full" />
+            </motion.div>
+
+            {/* Growth Card */}
+            <motion.div 
+              className="relative group rounded-2xl overflow-hidden border border-primary/50"
+            >
+              <div className="absolute inset-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80" 
+                  alt="Growth Plan" 
+                  className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-[1500ms] ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent" />
+              </div>
+
+              <div className="absolute top-0 right-0 bg-primary px-3 py-1 text-xs font-bold text-black uppercase rounded-bl-lg z-20">
+                Most Popular
+              </div>
+              
+              <div className="relative z-10 p-8 h-full flex flex-col">
+                <div className="mb-4">
+                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4 backdrop-blur-md">
+                      <Zap className="w-6 h-6 text-primary" />
+                   </div>
+                   <h3 className="text-3xl font-black uppercase text-primary mb-1">Growth</h3>
+                   <p className="text-sm text-zinc-400">For modern fitness studios.</p>
                 </div>
-              ))}
-            </div>
+                
+                <div className="text-4xl font-bold text-white mb-6">$49<span className="text-lg text-zinc-500 font-normal">/mo</span></div>
+                
+                <ul className="space-y-3 mb-8 text-zinc-300 flex-1">
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary" /> Unlimited Members</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary" /> Automated Billing</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary" /> Staff Management</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-primary" /> Diet & Workout Plans</li>
+                </ul>
 
-            {/* Fake Main Content */}
-            <div className="flex-1 flex flex-col p-6 gap-6">
-              {/* Fake Header */}
-              <div className="flex justify-between items-center">
-                <div className="h-6 w-48 bg-muted-foreground/20 rounded-full" />
-                <div className="flex gap-2">
-                    <div className="w-8 h-8 rounded-full bg-muted-foreground/10" />
-                    <div className="w-8 h-8 rounded-full bg-muted-foreground/10" />
+                <button className="w-full py-4 bg-primary text-black font-bold uppercase tracking-widest hover:bg-white transition-colors rounded-lg">
+                  Start Free Trial
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Enterprise Card */}
+            <motion.div 
+              className="relative group rounded-2xl overflow-hidden"
+            >
+              <div className="absolute inset-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=800&q=80" 
+                  alt="Enterprise Plan" 
+                  className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[1500ms] ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent" />
+              </div>
+              
+              <div className="relative z-10 p-8 h-full flex flex-col">
+                <div className="mb-4">
+                   <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-4 backdrop-blur-md">
+                      <Flame className="w-6 h-6 text-purple-500" />
+                   </div>
+                   <h3 className="text-3xl font-black uppercase text-purple-500 mb-1">Scale</h3>
+                   <p className="text-sm text-zinc-400">For multi-location chains.</p>
                 </div>
-              </div>
+                
+                <div className="text-4xl font-bold text-white mb-6">Custom</div>
+                
+                <ul className="space-y-3 mb-8 text-zinc-300 flex-1">
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-purple-500" /> White-label App</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-purple-500" /> Advanced API Access</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-purple-500" /> Dedicated Support</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-purple-500" /> Global Analytics</li>
+                </ul>
 
-              {/* Fake Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="p-4 rounded-xl border border-border bg-card flex flex-col gap-3">
-                        <div className="flex justify-between">
-                            <div className="w-8 h-8 rounded-lg bg-muted" />
-                            <div className="w-12 h-4 rounded-full bg-green-500/20" />
-                        </div>
-                        <div className="h-6 w-24 bg-muted-foreground/20 rounded-full mt-2" />
-                        <div className="h-3 w-32 bg-muted-foreground/10 rounded-full" />
-                    </div>
-                ))}
+                <button className="w-full py-4 bg-purple-600/90 text-white font-bold uppercase tracking-widest hover:bg-purple-600 backdrop-blur-sm transition-colors rounded-lg">
+                  Contact Sales
+                </button>
               </div>
-
-              {/* Fake Chart Area */}
-              <div className="flex-1 rounded-xl border border-border bg-card p-6 flex items-end gap-2 relative overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-50" />
-                 {/* Bar Chart Bars */}
-                 {[40, 65, 45, 80, 55, 70, 40, 60, 75, 50, 65, 85, 95].map((height, i) => (
-                    <div 
-                        key={i} 
-                        className="flex-1 bg-primary/20 rounded-t-sm hover:bg-primary transition-colors duration-300"
-                        style={{ height: `${height}%` }}
-                    />
-                 ))}
-              </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </motion.div>
-
-      {/* Features Grid */}
-      <section id="features" className="relative z-10 container mx-auto px-6 py-32 border-t border-border">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              key={index}
-              className="group p-8 rounded-3xl bg-card border border-border hover:border-primary/50 hover:bg-muted/50 transition-all duration-500"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                <feature.icon className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground mb-4">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed font-light">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
       </section>
 
-      {/* Stats Section with Divider */}
-      <section className="relative z-10 container mx-auto px-6 py-20">
-        <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border border-y border-border bg-card/30 backdrop-blur-sm rounded-3xl">
-          {stats.map((stat, index) => (
-            <div key={index} className="flex-1 p-12 text-center group cursor-default">
-              <h3 className="text-5xl md:text-6xl font-bold gradient-text mb-2 group-hover:scale-110 transition-transform duration-500">
-                {stat.value}
-              </h3>
-              <p className="text-muted-foreground uppercase tracking-widest text-sm font-medium">{stat.label}</p>
-            </div>
-          ))}
+      {/* Marquee Divider */}
+      <div className="bg-primary py-4 overflow-hidden border-y-4 border-black relative">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {/* First set */}
+          <div className="flex gap-8 px-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <span key={`a-${i}`} className="text-4xl font-black uppercase text-black tracking-tighter">
+                    WORKOUT • NUTRITION • MINDFULNESS • RECOVERY • COMMUNITY •
+                </span>
+            ))}
+          </div>
+          {/* Duplicate set for seamless loop */}
+          <div className="flex gap-8 px-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <span key={`b-${i}`} className="text-4xl font-black uppercase text-black tracking-tighter">
+                    WORKOUT • NUTRITION • MINDFULNESS • RECOVERY • COMMUNITY •
+                </span>
+            ))}
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* CTA Section */}
-      <section className="relative z-10 container mx-auto px-6 py-32 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">Ready to transform your gym?</h2>
-          <p className="text-xl text-muted-foreground">Join elite fitness centers using Rise Fitness to scale their operations.</p>
-          <Link 
-            href="/sign-in"
-            className="inline-block px-12 py-5 bg-primary text-primary-foreground text-lg font-bold rounded-full hover:opacity-90 transition-opacity"
-          >
-            Get Started Free
-          </Link>
-        </div>
+      {/* Visual Grid Section */}
+      <section id="community" className="py-24 px-6 bg-black scroll-mt-24">
+         <div className="container mx-auto">
+             <div className="grid md:grid-cols-2 gap-8 items-center mb-16">
+                 <div>
+                     <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-6">
+                         Join The <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">RISE.FIT</span>
+                     </h2>
+                     <p className="text-xl text-zinc-400 max-w-md">
+                         More than just a gym. Be part of a community that pushes you further.
+                     </p>
+                 </div>
+                 <div className="flex justify-end">
+                      <Link href="#gallery-grid" className="group flex items-center gap-4 text-2xl font-bold uppercase tracking-widest hover:text-primary transition-colors">
+                          View Gallery <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+                      </Link>
+                 </div>
+             </div>
+
+             <div id="gallery-grid" className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px] scroll-mt-32">
+                 {WORKOUT_IMAGES.map((img, i) => (
+                     <motion.div 
+                        key={i}
+                        className={`relative rounded-xl overflow-hidden group ${i === 0 ? 'col-span-2 row-span-2' : ''}`}
+                     >
+                         <img src={img} alt="Workout" className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                         <div className="absolute bottom-4 left-4">
+                             <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded text-xs font-bold uppercase">
+                                 #RiseFit
+                             </span>
+                         </div>
+                     </motion.div>
+                 ))}
+             </div>
+         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-border py-12 bg-muted/30">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-muted-foreground">&copy; 2026 Rise Fitness. All rights reserved.</p>
-        </div>
+      <footer className="py-12 bg-zinc-950 border-t border-white/5">
+         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+             <div className="flex items-center gap-2">
+                 <Dumbbell className="w-6 h-6 text-white" />
+                 <span className="text-lg font-bold uppercase tracking-widest">RISE.FIT</span>
+             </div>
+             <p className="text-zinc-500 text-sm">© 2026 RISE.FIT. All rights reserved.</p>
+             <div className="flex gap-6">
+                 <a href="#" className="text-zinc-500 hover:text-white">INSTAGRAM</a>
+                 <a href="#" className="text-zinc-500 hover:text-white">TWITTER</a>
+                 <a href="#" className="text-zinc-500 hover:text-white">YOUTUBE</a>
+             </div>
+         </div>
       </footer>
     </div>
   );
 }
-
-const features = [
-  {
-    icon: Users,
-    title: "Member Management",
-    description: "Streamline your member database with powerful tools for tracking and engagement."
-  },
-  {
-    icon: Activity,
-    title: "Performance Tracking",
-    description: "Advanced analytics to monitor gym performance and member progress in real-time."
-  },
-  {
-    icon: Calendar,
-    title: "Smart Scheduling",
-    description: "Effortless class scheduling and trainer management with automated conflicts resolution."
-  },
-  {
-    icon: Shield,
-    title: "Secure Access",
-    description: "Enterprise-grade security for your data and integrated access control systems."
-  }
-];
-
-const stats = [
-  { value: "100%", label: "Uptime" },
-  { value: "24/7", label: "Support" },
-  { value: "∞", label: "Scale" }
-];

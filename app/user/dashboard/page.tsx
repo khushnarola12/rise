@@ -4,9 +4,10 @@ import { GradientStatCard } from '@/components/stat-card';
 import { 
   User, Dumbbell, Calendar, Activity, TrendingUp, Clock, 
   CheckCircle, Scale, Target, ArrowUp, ArrowDown, Minus,
-  ClipboardList
+  ClipboardList, ArrowRight, Flame, Utensils
 } from 'lucide-react';
 import { MemberQuickActions } from '@/components/member-quick-actions';
+import Link from 'next/link';
 
 // Ensure fresh data on every request after revalidation
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,32 @@ function calculateStreak(attendance: any[]): number {
   return streak;
 }
 
+// ... (previous imports)
+
+const GRADIENTS = [
+  'from-purple-500 to-indigo-600',
+  'from-pink-500 to-rose-600',
+  'from-orange-400 to-pink-600',
+  'from-blue-400 to-cyan-500', 
+  'from-emerald-400 to-teal-600'
+];
+
+const WORKOUT_IMAGES = [
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80", // Gym weights
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80", // Gym dark
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&q=80", // Home workout
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80", // Crossfit
+  "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80", // Gym woman
+];
+
+const DIET_IMAGES = [
+  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80", // Healthy food
+  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80", // Food display
+  "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=800&q=80", // Meal prep
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80", // Salad
+  "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80", // Breakfast
+];
+
 export default async function UserDashboard() {
   const user = await getCurrentUserData();
 
@@ -59,7 +86,9 @@ export default async function UserDashboard() {
     attendanceMonthResult,
     attendanceAllResult,
     progressResult,
-    membershipResult
+    membershipResult,
+    suggestedWorkoutsResult,
+    suggestedDietsResult
   ] = await Promise.all([
     supabaseAdmin.from('user_profiles').select('*').eq('user_id', user?.id).single(),
     supabaseAdmin.from('trainer_assignments').select(`*, users:trainer_id (id, first_name, last_name, email, phone)`).eq('user_id', user?.id).eq('is_active', true),
@@ -68,7 +97,9 @@ export default async function UserDashboard() {
     supabaseAdmin.from('attendance').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
     supabaseAdmin.from('attendance').select('*').eq('user_id', user?.id).order('date', { ascending: false }).limit(30),
     supabaseAdmin.from('progress_logs').select('*').eq('user_id', user?.id).order('logged_at', { ascending: false }),
-    supabaseAdmin.from('user_memberships').select('*').eq('user_id', user?.id).eq('status', 'active').order('end_date', { ascending: false }).limit(1).single()
+    supabaseAdmin.from('user_memberships').select('*').eq('user_id', user?.id).eq('status', 'active').order('end_date', { ascending: false }).limit(1).single(),
+    supabaseAdmin.from('workout_plans').select('*').eq('gym_id', user?.gym_id).limit(3),
+    supabaseAdmin.from('diet_plans').select('*').eq('gym_id', user?.gym_id).limit(3)
   ]);
 
   const profile = profileResult.data;
@@ -79,6 +110,8 @@ export default async function UserDashboard() {
   const attendanceRecords = attendanceAllResult.data || [];
   const progressLogs = progressResult.data || [];
   const activeMembership = membershipResult.data;
+  const suggestedWorkouts = suggestedWorkoutsResult.data || [];
+  const suggestedDiets = suggestedDietsResult.data || [];
 
   // Calculate stats
   const streak = calculateStreak(attendanceRecords);
@@ -263,7 +296,7 @@ export default async function UserDashboard() {
       {/* Active Plans */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Workout Plan */}
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
               <Dumbbell className="w-5 h-5 text-purple-500" />
@@ -275,7 +308,7 @@ export default async function UserDashboard() {
           </div>
 
           {activeWorkout ? (
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
               <div className="p-4 bg-muted/30 rounded-lg">
                 <p className="font-semibold text-foreground mb-1">{activeWorkout.workout_plans?.name}</p>
                 <p className="text-sm text-muted-foreground line-clamp-2">{activeWorkout.workout_plans?.description}</p>
@@ -289,16 +322,63 @@ export default async function UserDashboard() {
                 View Plan
               </a>
             </div>
+
           ) : (
-            <div className="text-center py-6">
-              <Dumbbell className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground text-sm">No active workout plan</p>
+            <div className="flex-1 flex flex-col">
+               {suggestedWorkouts.length > 0 ? (
+                 <div className="space-y-3 text-left">
+                   <p className="text-sm text-muted-foreground mb-2">Recommended for you:</p>
+                   {suggestedWorkouts.slice(0, 2).map((plan: any, i: number) => (
+                     <Link 
+                       key={plan.id}
+                       href={`/user/workout/library/${plan.id}`}
+                       className="group relative overflow-hidden rounded-xl h-32 flex items-center justify-between p-4 transition-all hover:shadow-lg hover:-translate-y-1 block"
+                     >
+                       {/* Background Image */}
+                       <div className="absolute inset-0">
+                         <img 
+                           src={WORKOUT_IMAGES[i % WORKOUT_IMAGES.length]} 
+                           alt="Workout" 
+                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+                       </div>
+
+                       <div className="relative z-10 flex-1 min-w-0 pr-4">
+                         <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold tracking-wider uppercase text-purple-400 bg-purple-500/20 px-2 py-0.5 rounded backdrop-blur-md border border-purple-500/20">
+                              {plan.difficulty || 'General'}
+                            </span>
+                         </div>
+                         <h4 className="font-black text-xl text-white italic tracking-tight uppercase leading-none mb-1">
+                           {plan.name}
+                         </h4>
+                         <span className="text-xs text-gray-300 flex items-center gap-1">
+                           <Clock className="w-3 h-3" /> {plan.duration_weeks} WEEKS
+                         </span>
+                       </div>
+                       
+                       <div className="relative z-10 bg-white/10 p-2 rounded-full backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                         <ArrowRight className="w-5 h-5 text-white" />
+                       </div>
+                     </Link>
+                   ))}
+                   <Link href="/user/workout/library" className="block text-center text-xs text-primary hover:underline mt-2">
+                     View all plans
+                   </Link>
+                 </div>
+               ) : (
+                <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
+                  <Dumbbell className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">No active workout plan</p>
+                </div>
+               )}
             </div>
           )}
         </div>
 
         {/* Diet Plan */}
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
               <Calendar className="w-5 h-5 text-green-500" />
@@ -310,7 +390,7 @@ export default async function UserDashboard() {
           </div>
 
           {activeDiet ? (
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
               <div className="p-4 bg-muted/30 rounded-lg">
                 <p className="font-semibold text-foreground mb-1">{activeDiet.diet_plans?.name}</p>
                 <p className="text-sm text-muted-foreground line-clamp-2">{activeDiet.diet_plans?.description}</p>
@@ -325,9 +405,55 @@ export default async function UserDashboard() {
               </a>
             </div>
           ) : (
-            <div className="text-center py-6">
-              <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground text-sm">No active diet plan</p>
+            <div className="flex-1 flex flex-col">
+              {suggestedDiets.length > 0 ? (
+                 <div className="space-y-3 text-left">
+                   <p className="text-sm text-muted-foreground mb-2">Recommended for you:</p>
+                   {suggestedDiets.slice(0, 2).map((plan: any, i: number) => (
+                     <Link 
+                       key={plan.id}
+                       href={`/user/diet/library/${plan.id}`}
+                       className="group relative overflow-hidden rounded-xl h-32 flex items-center justify-between p-4 transition-all hover:shadow-lg hover:-translate-y-1 block"
+                     >
+                       {/* Background Image */}
+                       <div className="absolute inset-0">
+                         <img 
+                           src={DIET_IMAGES[i % DIET_IMAGES.length]} 
+                           alt="Diet" 
+                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+                       </div>
+
+                       <div className="relative z-10 flex-1 min-w-0 pr-4">
+                         <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold tracking-wider uppercase text-green-400 bg-green-500/20 px-2 py-0.5 rounded backdrop-blur-md border border-green-500/20">
+                              {plan.diet_preference?.replace('_', ' ') || 'HEALTHY'}
+                            </span>
+                         </div>
+                         <h4 className="font-black text-xl text-white italic tracking-tight uppercase leading-none mb-1">
+                           {plan.name}
+                         </h4>
+                         <span className="text-xs text-gray-300 flex items-center gap-1">
+                           <Flame className="w-3 h-3 text-orange-400" /> {plan.total_calories || 0} kcal
+                         </span>
+                       </div>
+                       
+                       <div className="relative z-10 bg-white/10 p-2 rounded-full backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                         <ArrowRight className="w-5 h-5 text-white" />
+                       </div>
+                     </Link>
+                   ))}
+                   <Link href="/user/diet/library" className="block text-center text-xs text-primary hover:underline mt-2">
+                     View all plans
+                   </Link>
+                 </div>
+               ) : (
+                <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
+                  <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">No active diet plan</p>
+                </div>
+               )}
             </div>
           )}
         </div>

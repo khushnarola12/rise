@@ -6,6 +6,15 @@ import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
+const DIET_IMAGES = [
+  "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80", // Healthy bowl
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80", // Salad
+  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80", // Keto/Avocado
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80", // Dark food
+  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80", // Pancakes/Breakfast
+  "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80", // Oatmeal
+];
+
 export default async function UserDietLibraryPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
   const user = await getCurrentUserData();
@@ -86,97 +95,81 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
       {/* Diet Plans Grid */}
       {filteredPlans && filteredPlans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPlans.map((plan) => {
+          {filteredPlans.map((plan, i) => {
             const usage = usageMap[plan.id] || { total: 0, active: 0 };
             
             return (
-              <div
+              <Link
                 key={plan.id}
-                className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                href={`/user/diet/library/${plan.id}`}
+                className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block"
               >
-                  {/* Card Header Strip */}
-                  <div className={`h-2 bg-gradient-to-r ${
-                    plan.diet_preference === 'veg' 
-                      ? 'from-green-500 to-emerald-500' 
-                      : plan.diet_preference === 'non_veg'
-                        ? 'from-red-500 to-rose-500'
-                        : 'from-orange-500 to-amber-500' // Custom/Other
-                  }`} />
+                  {/* Background Image */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={DIET_IMAGES[i % DIET_IMAGES.length]} 
+                      alt={plan.name}
+                      className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+                  </div>
                   
-                  <div className="p-6 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <h3 className={`text-xl font-bold transition-colors ${
-                        plan.diet_preference === 'veg' 
-                          ? 'group-hover:text-green-500' 
-                          : plan.diet_preference === 'non_veg'
-                            ? 'group-hover:text-red-500'
-                            : 'group-hover:text-orange-500'
-                      }`}>
-                        {plan.name}
-                      </h3>
-                      <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs font-medium border border-border">
-                        {plan.total_calories} kcal
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {plan.description || 'No description provided.'}
-                    </p>
-
-                    {/* Macros */}
-                    <div className="flex gap-3">
-                      {plan.protein_grams && (
-                        <div className="text-center">
-                          <p className="text-lg font-semibold text-primary">{plan.protein_grams}g</p>
-                          <p className="text-xs text-muted-foreground">Protein</p>
-                        </div>
-                      )}
-                      {plan.carbs_grams && (
-                        <div className="text-center">
-                          <p className="text-lg font-semibold text-primary">{plan.carbs_grams}g</p>
-                          <p className="text-xs text-muted-foreground">Carbs</p>
-                        </div>
-                      )}
-                      {plan.fat_grams && (
-                        <div className="text-center">
-                          <p className="text-lg font-semibold text-primary">{plan.fat_grams}g</p>
-                          <p className="text-xs text-muted-foreground">Fat</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {plan.diet_preference && (
-                        <span className={`flex items-center gap-1 px-2 py-1 rounded text-xs capitalize ${
+                  {/* Floating Badges */}
+                  <div className="absolute top-4 right-4 flex gap-2">
+                     {plan.diet_preference && (
+                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border ${
                           plan.diet_preference === 'veg' 
-                            ? 'bg-green-500/10 text-green-500' 
+                            ? 'bg-green-500/20 text-green-300 border-green-500/30' 
                             : plan.diet_preference === 'non_veg'
-                              ? 'bg-red-500/10 text-red-500'
-                              : 'bg-orange-500/10 text-orange-500'
+                              ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                              : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
                         }`}>
                           {plan.diet_preference === 'veg' ? <Apple className="w-3 h-3" /> : <Utensils className="w-3 h-3" />}
                           {plan.diet_preference.replace('_', ' ')}
                         </span>
-                      )}
+                     )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative z-10 h-full flex flex-col justify-end p-6">
+                    <div className="mb-1">
+                      <span className="text-xs font-bold text-primary tracking-wide uppercase">
+                         {plan.total_calories} Calories
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-black italic text-white uppercase tracking-tight mb-2 drop-shadow-lg group-hover:text-primary transition-colors">
+                      {plan.name}
+                    </h3>
+                    
+                    {/* Macros Grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="bg-white/10 backdrop-blur-sm rounded p-1.5 text-center">
+                           <span className="block text-xs text-gray-400 uppercase font-bold">Protein</span>
+                           <span className="block text-sm font-bold text-white">{plan.protein_grams}g</span>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm rounded p-1.5 text-center">
+                           <span className="block text-xs text-gray-400 uppercase font-bold">Carbs</span>
+                           <span className="block text-sm font-bold text-white">{plan.carbs_grams}g</span>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm rounded p-1.5 text-center">
+                           <span className="block text-xs text-gray-400 uppercase font-bold">Fats</span>
+                           <span className="block text-sm font-bold text-white">{plan.fat_grams}g</span>
+                        </div>
                     </div>
 
-                  <div className="pt-4 border-t border-border flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground font-medium">{usage.active}</span>
-                        <span className="text-muted-foreground">active</span>
+                    <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
+                      <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">
+                         <div className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                            {usage.active} Active Members
+                         </div>
+                      </div>
+                      <div className="bg-white/10 p-2 rounded-full backdrop-blur-md group-hover:bg-primary group-hover:text-black transition-colors duration-300">
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
                       </div>
                     </div>
-                    <Link
-                      href={`/user/diet/library/${plan.id}`}
-                      className="text-sm text-green-500 hover:underline"
-                    >
-                      View Details
-                    </Link>
                   </div>
-                </div>
-              </div>
+              </Link>
             );
           })}
         </div>

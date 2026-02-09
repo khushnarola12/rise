@@ -1,9 +1,25 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Utensils, Calendar, Clock, Flame, Apple, Beef, Croissant } from 'lucide-react';
+import { Utensils, Calendar, Clock, Flame, Apple, Beef, Croissant, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
+
+const GRADIENTS = [
+  'from-purple-500 to-indigo-600',
+  'from-pink-500 to-rose-600',
+  'from-orange-400 to-pink-600',
+  'from-blue-400 to-cyan-500', 
+  'from-emerald-400 to-teal-600'
+];
+
+const DIET_IMAGES = [
+  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80", // Healthy food
+  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80", // Food display
+  "https://images.unsplash.com/photo-1543353071-873f17a7a088?w=800&q=80", // Meal prep
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80", // Salad
+  "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80", // Breakfast
+];
 
 export default async function UserDietPage() {
   const user = await getCurrentUserData();
@@ -33,6 +49,7 @@ export default async function UserDietPage() {
   const activePlanAssignment = dietPlans?.find(p => p.is_active);
   let activeDietPlan: any = null;
   let meals: any[] = [];
+  let suggestedPlans: any[] = [];
 
   if (activePlanAssignment?.diet_plan_id) {
     // Fetch the diet plan details
@@ -54,6 +71,14 @@ export default async function UserDietPage() {
       
       meals = mealData || [];
     }
+  } else {
+    // Fetch suggested plans
+    const { data } = await supabaseAdmin
+        .from('diet_plans')
+        .select('*')
+        .eq('gym_id', user.gym_id)
+        .limit(3);
+    suggestedPlans = data || [];
   }
 
   // Fetch previous plan details
@@ -232,14 +257,58 @@ export default async function UserDietPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-8 text-center">
-          <Utensils className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-foreground mb-2">
-            No Active Diet Plan
-          </h2>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            You don't have an active diet plan assigned yet. Contact your trainer to get started with a personalized nutrition plan.
-          </p>
+        <div className="bg-card border border-border rounded-xl p-8 text-center space-y-6">
+          <div className="space-y-2">
+            <Utensils className="w-14 h-14 text-muted-foreground/30 mx-auto" />
+            <h2 className="text-lg font-semibold text-foreground">
+              No Active Diet Plan
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              You don't have an active diet plan assigned. Check out these popular plans or contact your trainer.
+            </p>
+          </div>
+
+          {suggestedPlans.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
+              {suggestedPlans.map((plan: any, i: number) => (
+                <Link 
+                  key={plan.id}
+                  href={`/user/diet/library/${plan.id}`}
+                  className="group relative overflow-hidden rounded-xl h-48 flex flex-col justify-end p-5 transition-all hover:shadow-xl hover:-translate-y-1 block"
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={DIET_IMAGES[i % DIET_IMAGES.length]} 
+                      alt="Diet Plan" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                  </div>
+                  
+                  <div className="relative z-10 text-white">
+                    <div className="mb-2">
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-green-400 bg-green-500/20 px-2.5 py-1 rounded backdrop-blur-md border border-green-500/20">
+                        {plan.diet_preference?.replace('_', ' ') || 'General'}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-2xl italic tracking-tight uppercase leading-none mb-2 drop-shadow-md">
+                      {plan.name}
+                    </h4>
+                    <div className="flex items-center justify-between border-t border-white/10 pt-2 mt-1">
+                       <span className="text-xs text-gray-300 font-medium tracking-wide uppercase flex items-center gap-1.5">
+                         <Flame className="w-3.5 h-3.5 text-orange-400" />
+                         {plan.total_calories || 0} kcal
+                       </span>
+                       <div className="bg-white/10 p-1.5 rounded-full backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                         <ArrowRight className="w-4 h-4 text-white" />
+                       </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

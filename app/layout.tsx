@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from '@clerk/nextjs';
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import SmoothScroll from "@/components/smooth-scroll";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Rise Fitness - Gym Management System",
@@ -17,18 +21,19 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/sign-in"
       signUpUrl="/sign-in"
-      signInFallbackRedirectUrl="/api/auth/callback"
-      signUpFallbackRedirectUrl="/api/auth/callback"
+      afterSignOutUrl="/"
     >
       <html lang="en" suppressHydrationWarning>
-        <body className="antialiased" suppressHydrationWarning>
+        <body className={inter.className}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <SmoothScroll>
+              {children}
+            </SmoothScroll>
           </ThemeProvider>
         </body>
       </html>

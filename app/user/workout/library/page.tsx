@@ -6,6 +6,15 @@ import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
+const WORKOUT_IMAGES = [
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80",
+  "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80",
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&q=80",
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80",
+  "https://images.unsplash.com/photo-1574680096141-1c57c502aa8f?w=800&q=80",
+];
+
 export default async function UserWorkoutLibraryPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
   const user = await getCurrentUserData();
@@ -86,69 +95,69 @@ export default async function UserWorkoutLibraryPage({ searchParams }: { searchP
       {/* Workout Plans Grid */}
       {filteredPlans && filteredPlans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPlans.map((plan) => {
+          {filteredPlans.map((plan, i) => {
             const usage = usageMap[plan.id] || { total: 0, active: 0 };
             
             return (
-              <div
+              <Link
                 key={plan.id}
-                className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                href={`/user/workout/library/${plan.id}`}
+                className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block"
               >
-                <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500" />
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                  {/* Background Image */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={WORKOUT_IMAGES[i % WORKOUT_IMAGES.length]} 
+                      alt={plan.name}
+                      className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-80" />
+                  </div>
+                  
+                  {/* Floating Badges */}
+                  <div className="absolute top-4 right-4 flex gap-2">
+                     {plan.difficulty && (
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border ${
+                          plan.difficulty === 'beginner' 
+                            ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                            : plan.difficulty === 'intermediate'
+                              ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                              : 'bg-red-500/20 text-red-300 border-red-500/30'
+                        }`}>
+                          {plan.difficulty}
+                        </span>
+                     )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative z-10 h-full flex flex-col justify-end p-6">
+                    <h3 className="text-2xl font-black italic text-white uppercase tracking-tight mb-2 drop-shadow-lg group-hover:text-primary transition-colors">
                       {plan.name}
                     </h3>
-                    {plan.difficulty && (
-                      <span className={`px-2 py-1 rounded text-xs font-medium uppercase tracking-wider ${
-                        plan.difficulty === 'beginner' ? 'bg-green-500/10 text-green-500' :
-                        plan.difficulty === 'intermediate' ? 'bg-yellow-500/10 text-yellow-600' :
-                        'bg-red-500/10 text-red-500'
-                      }`}>
-                        {plan.difficulty}
-                      </span>
-                    )}
-                  </div>
+                    
+                    <p className="text-sm text-gray-300 line-clamp-2 mb-4 font-medium opacity-90">
+                      {plan.description || 'Professional workout plan designed for results.'}
+                    </p>
 
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {plan.description || 'No description provided.'}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {plan.duration_weeks && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        {plan.duration_weeks} weeks
+                    <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
+                      <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">
+                         {plan.duration_weeks && (
+                           <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-primary" />
+                              {plan.duration_weeks} Weeks
+                           </div>
+                         )}
+                         <div className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-primary" />
+                            {usage.active} Active
+                         </div>
                       </div>
-                    )}
-                    {plan.target_muscle_groups && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Target className="w-4 h-4" />
-                        {Array.isArray(plan.target_muscle_groups) 
-                          ? plan.target_muscle_groups.slice(0, 2).join(', ')
-                          : plan.target_muscle_groups}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-4 border-t border-border flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground font-medium">{usage.active}</span>
-                        <span className="text-muted-foreground">active</span>
+                      <div className="bg-white/10 p-2 rounded-full backdrop-blur-md group-hover:bg-primary group-hover:text-black transition-colors duration-300">
+                        <ArrowLeft className="w-4 h-4 rotate-180" />
                       </div>
                     </div>
-                    <Link
-                      href={`/user/workout/library/${plan.id}`}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      View Details
-                    </Link>
                   </div>
-                </div>
-              </div>
+              </Link>
             );
           })}
         </div>

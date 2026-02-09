@@ -1,10 +1,28 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Calendar, Clock, Target, PlayCircle } from 'lucide-react';
+import { Dumbbell, Calendar, Clock, Target, PlayCircle, ArrowRight } from 'lucide-react';
 import { YouTubeEmbed } from '@/components/youtube-embed';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
+
+// ... (previous imports)
+
+const GRADIENTS = [
+  'from-purple-500 to-indigo-600',
+  'from-pink-500 to-rose-600',
+  'from-orange-400 to-pink-600',
+  'from-blue-400 to-cyan-500', 
+  'from-emerald-400 to-teal-600'
+];
+
+const WORKOUT_IMAGES = [
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80", // Gym weights
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80", // Gym dark
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&q=80", // Home workout
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80", // Crossfit
+  "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80", // Gym woman
+];
 
 export default async function UserWorkoutPage() {
   const user = await getCurrentUserData();
@@ -34,6 +52,7 @@ export default async function UserWorkoutPage() {
   const activePlanAssignment = workoutPlans?.find(p => p.is_active);
   let activeWorkoutPlan: any = null;
   let exercises: any[] = [];
+  let suggestedPlans: any[] = [];
 
   if (activePlanAssignment?.workout_plan_id) {
     // Fetch the workout plan details
@@ -55,6 +74,14 @@ export default async function UserWorkoutPage() {
       
       exercises = exerciseData || [];
     }
+  } else {
+    // Fetch suggested plans
+    const { data } = await supabaseAdmin
+        .from('workout_plans')
+        .select('*')
+        .eq('gym_id', user.gym_id)
+        .limit(3);
+    suggestedPlans = data || [];
   }
 
   // Fetch previous plan details
@@ -213,14 +240,58 @@ export default async function UserWorkoutPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-8 text-center">
-          <Dumbbell className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-foreground mb-2">
-            No Active Workout Plan
-          </h2>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            You don't have an active workout plan assigned yet. Contact your trainer to get started with a personalized workout routine.
-          </p>
+        <div className="bg-card border border-border rounded-xl p-8 text-center space-y-6">
+          <div className="space-y-2">
+            <Dumbbell className="w-14 h-14 text-muted-foreground/30 mx-auto" />
+            <h2 className="text-lg font-semibold text-foreground">
+              No Active Workout Plan
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              You don't have an active workout plan assigned. Check out these popular plans or contact your trainer.
+            </p>
+          </div>
+          
+          {suggestedPlans.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
+              {suggestedPlans.map((plan: any, i: number) => (
+                <Link 
+                  key={plan.id}
+                  href={`/user/workout/library/${plan.id}`}
+                  className="group relative overflow-hidden rounded-xl h-48 flex flex-col justify-end p-5 transition-all hover:shadow-xl hover:-translate-y-1 block"
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={WORKOUT_IMAGES[i % WORKOUT_IMAGES.length]} 
+                      alt="Workout Plan" 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                  </div>
+                  
+                  <div className="relative z-10 text-white">
+                    <div className="mb-2">
+                       <span className="text-[10px] font-bold tracking-wider uppercase text-purple-400 bg-purple-500/20 px-2.5 py-1 rounded backdrop-blur-md border border-purple-500/20">
+                        {plan.difficulty || 'General'}
+                      </span>
+                    </div>
+                    <h4 className="font-black text-2xl italic tracking-tight uppercase leading-none mb-2 drop-shadow-md">
+                      {plan.name}
+                    </h4>
+                    <div className="flex items-center justify-between border-t border-white/10 pt-2 mt-1">
+                       <span className="text-xs text-gray-300 font-medium tracking-wide uppercase flex items-center gap-1.5">
+                         <Clock className="w-3.5 h-3.5" />
+                         {plan.duration_weeks} weeks
+                       </span>
+                       <div className="bg-white/10 p-1.5 rounded-full backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                         <ArrowRight className="w-4 h-4 text-white" />
+                       </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

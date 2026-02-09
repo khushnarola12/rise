@@ -94,6 +94,13 @@
     25% { transform: rotate(-3deg); }
     75% { transform: rotate(3deg); }
   }
+  
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  
+  --animate-marquee: marquee 30s linear infinite;
 }
 
 :root {
@@ -161,6 +168,10 @@
 /* ==========================================
    GLOBAL STYLES
    ========================================== */
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background-color: var(--background);
@@ -466,7 +477,7 @@ h1, h2, h3, h4, h5, h6 {
 *, *::before, *::after {
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: ease;
-  transition-duration: 150ms;
+  transition-duration: 300ms;
 }
 
 /* ==========================================
@@ -505,4 +516,28 @@ input:focus, textarea:focus, select:focus {
 
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ==========================================
+   LENIS SMOOTH SCROLL
+   ========================================== */
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }

@@ -7,7 +7,17 @@ import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
+const DIET_IMAGES = [
+  "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80",
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80",
+  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80",
+  "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80",
+];
+
 export default async function DietPlansPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  // ... existing code ...
   const { q } = await searchParams;
   const user = await getCurrentUserData();
   if (!user?.gym_id) return null;
@@ -28,6 +38,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
+      {/* ... header and search ... */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Diet Plans</h1>
@@ -60,7 +71,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
                 Vegetarian Plans
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {vegPlans.map((plan) => <DietPlanCard key={plan.id} plan={plan} />)}
+                {vegPlans.map((plan, i) => <DietPlanCard key={plan.id} plan={plan} index={i} />)}
               </div>
             </section>
           )}
@@ -72,7 +83,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
                 Non-Vegetarian & Other Plans
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {nonVegPlans.map((plan) => <DietPlanCard key={plan.id} plan={plan} />)}
+                {nonVegPlans.map((plan, i) => <DietPlanCard key={plan.id} plan={plan} index={i + vegPlans.length} />)}
               </div>
             </section>
           )}
@@ -82,47 +93,73 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function DietPlanCard({ plan }: { plan: any }) {
+function DietPlanCard({ plan, index }: { plan: any; index: number }) {
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group">
-      <div className={`h-2 bg-gradient-to-r ${plan.diet_preference === 'veg' ? 'from-green-500 to-emerald-500' : 'from-red-500 to-orange-500'}`} />
-      <div className="p-6 space-y-4">
-        <div className="flex justify-between items-start">
-          <Link href={`/admin/diets/${plan.id}`} className="flex-1">
-            <h3 className={`text-xl font-bold text-foreground transition-colors ${plan.diet_preference === 'veg' ? 'group-hover:text-green-500' : 'group-hover:text-red-500'}`}>
-              {plan.name}
-            </h3>
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 rounded text-xs font-medium uppercase tracking-wider ${plan.diet_preference === 'veg' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-              {plan.total_calories} kcal
-            </span>
+    <Link 
+      href={`/admin/diets/${plan.id}`}
+      className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block bg-zinc-900"
+    >
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <img 
+          src={DIET_IMAGES[index % DIET_IMAGES.length]} 
+          alt={plan.name}
+          className="w-full h-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110 opacity-60 group-hover:opacity-100"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent transition-opacity duration-300 group-hover:opacity-80" />
+      </div>
+
+      {/* Top Actions & Badges */}
+      <div className="absolute top-4 right-4 z-20 flex gap-2">
+         <div className="bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-lg p-1 transition-colors border border-white/10">
             <PlanActionsMenu 
               planId={plan.id} 
               planType="diet" 
               planName={plan.name}
             />
-          </div>
+         </div>
+      </div>
+      
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+         {plan.diet_preference && (
+            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border ${
+              plan.diet_preference === 'veg' 
+                ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                : plan.diet_preference === 'non_veg'
+                  ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                  : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+            }`}>
+              {plan.diet_preference === 'veg' ? <Utensils className="w-3 h-3" /> : <Utensils className="w-3 h-3" />}
+              {plan.diet_preference.replace('_', ' ')}
+            </span>
+         )}
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-end p-6">
+        <div className="mb-1">
+          <span className="text-xs font-bold text-primary tracking-wide uppercase">
+             {plan.total_calories} Calories
+          </span>
         </div>
+        <h3 className="text-2xl font-black italic text-white uppercase tracking-tight mb-2 drop-shadow-lg group-hover:text-primary transition-colors">
+           {plan.name}
+        </h3>
         
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {plan.description || 'No description provided.'}
+        <p className="text-sm text-gray-300 line-clamp-2 mb-4 font-medium opacity-90">
+           {plan.description || 'Nutritious meal plan designed for your goals.'}
         </p>
-        <Link href={`/admin/diets/${plan.id}`} className="text-sm font-medium text-primary hover:underline mt-2 inline-block">
-          View Details
-        </Link>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4 border-t border-border">
-          <div className="flex items-center gap-1">
-            <Utensils className="w-4 h-4" />
-            <span className="capitalize">{plan.diet_preference?.replace('_', ' ')}</span>
-          </div>
-          <div className="flex items-center gap-1 ml-auto">
-            <Users className="w-4 h-4" />
-            By {plan.users?.first_name || 'Admin'}
+
+        <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
+          <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">
+             <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-primary" />
+                By {plan.users?.first_name || 'Admin'}
+             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
