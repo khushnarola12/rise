@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactLenis, useLenis } from 'lenis/react';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 function LenisRAF() {
   const lenis = useLenis();
@@ -27,22 +27,43 @@ function LenisRAF() {
   return null;
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth < 768;
+      setIsMobile(isTouchDevice && isSmallScreen);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  return isMobile;
+}
+
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile();
+
+  // On mobile touch devices, use native CSS smooth scroll instead of Lenis
+  // Lenis syncTouch can cause jank and fight with native touch momentum
+  if (isMobile) {
+    return <>{children}</>;
+  }
+
   return (
     <ReactLenis
       root
       options={{
-        lerp: 0.075,          // Lower = smoother/more momentum. 0.075 for buttery feel.
-        smoothWheel: true,     // Smooth scrolling for mouse wheel.
-        wheelMultiplier: 0.8,  // Slightly reduce scroll speed for premium feel.
-        touchMultiplier: 2,    // Touch scroll multiplier for mobile responsiveness.
+        lerp: 0.075,
+        smoothWheel: true,
+        wheelMultiplier: 0.8,
         infinite: false,
-        syncTouch: true,       // CRITICAL: Enables smooth scrolling on touch/mobile devices.
-        syncTouchLerp: 0.075,  // Touch smoothing factor - same as desktop for consistency.
-        autoResize: true,      // Auto-resize on window resize / orientation change.
+        autoResize: true,
         prevent: (node: HTMLElement) => {
-          // Don't interfere with elements that have their own scroll
-          return node.hasAttribute('data-lenis-prevent') || 
+          return node.hasAttribute('data-lenis-prevent') ||
                  node.classList.contains('overflow-y-auto') ||
                  node.classList.contains('overflow-x-auto') ||
                  node.tagName === 'INPUT' ||

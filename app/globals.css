@@ -170,7 +170,19 @@
    ========================================== */
 
 html {
-  /* scroll-behavior handled by Lenis smooth scroll library */
+  /* Desktop: scroll-behavior handled by Lenis smooth scroll library */
+  /* Mobile: enable native CSS smooth scroll */
+}
+
+@media (pointer: coarse), (hover: none) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 body {
@@ -542,13 +554,17 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
-/* Mobile smooth scroll support */
-html.lenis {
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+/* Mobile smooth scroll - native approach */
+@media (pointer: coarse), (hover: none) {
+  html, body {
+    scroll-behavior: smooth !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Smooth transitions for page content on mobile */
+  main {
+    scroll-behavior: smooth;
+  }
 }
 
-html.lenis body {
-  overscroll-behavior: none;
-}
