@@ -1,28 +1,28 @@
 'use client';
 
 import { ReactLenis, useLenis } from 'lenis/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 function LenisRAF() {
   const lenis = useLenis();
   const rafRef = useRef<number | undefined>(undefined);
 
+  const animate = useCallback((time: number) => {
+    lenis?.raf(time);
+    rafRef.current = requestAnimationFrame(animate);
+  }, [lenis]);
+
   useEffect(() => {
     if (!lenis) return;
 
-    function raf(time: number) {
-      lenis?.raf(time);
-      rafRef.current = requestAnimationFrame(raf);
-    }
-
-    rafRef.current = requestAnimationFrame(raf);
+    rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [lenis]);
+  }, [lenis, animate]);
 
   return null;
 }
@@ -32,14 +32,23 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     <ReactLenis
       root
       options={{
-        lerp: 0.08,          // Lower = smoother/more momentum. 0.08 gives a buttery feel.
-        smoothWheel: true,    // Enable smooth scrolling for mouse wheel events.
-        wheelMultiplier: 0.8, // Slightly reduce scroll speed for a premium feel.
-        touchMultiplier: 1.5, // Touch scroll multiplier.
+        lerp: 0.075,          // Lower = smoother/more momentum. 0.075 for buttery feel.
+        smoothWheel: true,     // Smooth scrolling for mouse wheel.
+        wheelMultiplier: 0.8,  // Slightly reduce scroll speed for premium feel.
+        touchMultiplier: 2,    // Touch scroll multiplier for mobile responsiveness.
         infinite: false,
-        syncTouch: true,      // Sync touch events for smooth touch scrolling on mobile.
-        syncTouchLerp: 0.06,  // Touch smoothing factor.
-        autoResize: true,     // Auto-resize on window resize.
+        syncTouch: true,       // CRITICAL: Enables smooth scrolling on touch/mobile devices.
+        syncTouchLerp: 0.075,  // Touch smoothing factor - same as desktop for consistency.
+        autoResize: true,      // Auto-resize on window resize / orientation change.
+        prevent: (node: HTMLElement) => {
+          // Don't interfere with elements that have their own scroll
+          return node.hasAttribute('data-lenis-prevent') || 
+                 node.classList.contains('overflow-y-auto') ||
+                 node.classList.contains('overflow-x-auto') ||
+                 node.tagName === 'INPUT' ||
+                 node.tagName === 'TEXTAREA' ||
+                 node.tagName === 'SELECT';
+        },
       }}
     >
       <LenisRAF />

@@ -170,7 +170,7 @@
    ========================================== */
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior handled by Lenis smooth scroll library */
 }
 
 body {
@@ -540,4 +540,15 @@ html.lenis, html.lenis body {
 
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
+}
+
+/* Mobile smooth scroll support */
+html.lenis {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+html.lenis body {
+  overscroll-behavior: none;
 }
