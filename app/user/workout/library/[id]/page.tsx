@@ -33,14 +33,14 @@ export default async function UserWorkoutLibraryDetailPage({ params }: PageProps
   const exercises = plan.workout_exercises?.sort((a: any, b: any) => a.exercise_order - b.exercise_order) || [];
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="animate-in fade-in slide-in-from-bottom duration-500">
         <Link
           href="/user/workout/library"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group/back"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover/back:-translate-x-1" />
           Back to Library
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -70,7 +70,7 @@ export default async function UserWorkoutLibraryDetailPage({ params }: PageProps
       </div>
 
       {/* Exercises */}
-      <div className="bg-card border border-border rounded-xl p-5 sm:p-6">
+      <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
         <h2 className="text-lg font-semibold text-foreground mb-4">Exercises</h2>
         
         {exercises.length > 0 ? (
@@ -78,10 +78,10 @@ export default async function UserWorkoutLibraryDetailPage({ params }: PageProps
             {exercises.map((exercise: any, index: number) => (
               <div
                 key={exercise.id}
-                className="p-4 bg-muted/30 rounded-lg border border-border/50"
+                className="p-4 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 hover:border-border hover:shadow-md transition-all duration-300 group/card"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm flex-shrink-0">
+                  <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm flex-shrink-0 group-hover/card:bg-purple-500/20 transition-colors">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">

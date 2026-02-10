@@ -4,117 +4,77 @@ import { supabaseAdmin } from './supabase-admin';
 import { cache } from 'react';
 
 /**
- * Get the current user's data from Supabase
- * This syncs Clerk user with Supabase and returns role + gym info
- * Wrapped in React cache for request deduping
+ * Get the current user's data (Server Side)
+ * Uses Clerk Authentication and syncs with Supabase DB
  */
 export const getCurrentUserData = cache(async (): Promise<User | null> => {
   try {
     const { userId } = await auth();
+    const clerkUser = await currentUser();
     
-    if (!userId) {
+    if (!userId || !clerkUser) {
       return null;
     }
 
-    // Check if user exists in Supabase
-    const { data: existingUser, error } = await supabaseAdmin
+    // 1. Try to find user by Clerk ID
+    const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('clerk_id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching user:', error);
-      return null;
+    if (existingUser) {
+        return existingUser;
     }
 
-    // If user doesn't exist by ID, check if they exist by email (invited user)
-    if (!existingUser) {
-      const clerkUser = await currentUser();
-      
-      if (!clerkUser) {
-        return null;
-      }
-
-      const email = clerkUser.emailAddresses[0]?.emailAddress;
-
-      // 1. Check if this is the superuser email (Auto-create superuser)
-      const isSuperuser = email === process.env.SUPERUSER_EMAIL;
-
-      if (isSuperuser) {
-        // Create superuser
-        const { data: newUser, error: createError } = await supabaseAdmin
-          .from('users')
-          .insert({
-            clerk_id: userId,
-            email: email,
-            first_name: clerkUser.firstName,
-            last_name: clerkUser.lastName,
-            role: 'superuser' as UserRole,
-            avatar_url: clerkUser.imageUrl,
-            is_active: true
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Error creating superuser:', createError);
-          return null;
-        }
-        return newUser;
-      }
-
-      // 2. Check if user exists by email (Invited User)
-      const { data: invitedUser } = await supabaseAdmin
+    // 2. Fallback: Check by email (Migration scenario)
+    const email = clerkUser.emailAddresses[0]?.emailAddress;
+    if (email) {
+       const { data: emailUser } = await supabaseAdmin
         .from('users')
         .select('*')
         .eq('email', email)
         .single();
-
-      if (invitedUser) {
-        // Update the invited user with their actual Clerk ID
-        const { data: updatedUser, error: updateError } = await supabaseAdmin
-          .from('users')
-          .update({ 
-            clerk_id: userId,
-            first_name: clerkUser.firstName || invitedUser.first_name,
-            last_name: clerkUser.lastName || invitedUser.last_name,
-            avatar_url: clerkUser.imageUrl || invitedUser.avatar_url,
-            is_active: true // Ensure they are active upon claiming
-          })
-          .eq('id', invitedUser.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Error claiming user account:', updateError);
-          return null;
-        }
-        return updatedUser;
-      }
-
-      // 3. User truly doesn't exist
-      console.error('User not found in database. Must be created by admin first.');
-      return null;
+        
+       if (emailUser) {
+         // Link the account by updating clerk_id
+         const { data: linkedUser } = await supabaseAdmin
+           .from('users')
+           .update({ 
+             clerk_id: userId,
+             avatar_url: clerkUser.imageUrl
+           })
+           .eq('id', emailUser.id)
+           .select()
+           .single();
+           
+         return linkedUser || emailUser;
+       }
     }
 
-    // Fix: If user exists but has no gym_id (legacy/dev data issue), assign the default gym
-    if (existingUser && !existingUser.gym_id) {
-      const { data: defaultGym } = await supabaseAdmin.from('gyms').select('id').single();
-      
-      if (defaultGym) {
-        const { data: fixedUser } = await supabaseAdmin
-          .from('users')
-          .update({ gym_id: defaultGym.id })
-          .eq('id', existingUser.id)
-          .select()
-          .single();
-          
-        return fixedUser || existingUser;
-      }
-    }
+    // 3. Auto-create user record if missing (JIT Provisioning)
+    console.log('Auto-creating user record for Clerk user:', userId);
+    
+    // Check if it's the superuser email
+    const isSuperuser = email === process.env.SUPERUSER_EMAIL;
+    const role: UserRole = isSuperuser ? 'superuser' : (clerkUser.publicMetadata.role as UserRole || 'user');
 
-    return existingUser;
+    const { data: newUser } = await supabaseAdmin
+      .from('users')
+      .insert({
+        clerk_id: userId,
+        email: email,
+        first_name: clerkUser.firstName,
+        last_name: clerkUser.lastName,
+        role: role,
+        avatar_url: clerkUser.imageUrl,
+        is_active: true,
+      })
+      .select()
+      .single();
+
+    return newUser;
+
   } catch (error) {
     console.error('Error in getCurrentUserData:', error);
     return null;

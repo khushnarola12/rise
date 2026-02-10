@@ -6,8 +6,8 @@ import { UserActionsMenu } from '@/components/user-actions-menu';
 import { ResendInviteButton, InvitePendingBadge } from '@/components/resend-invite-button';
 import { URLSearchInput } from '@/components/url-search-input';
 
-// Helper to check if user has claimed their account
-const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
+// Helper to check if user has claimed their account (no auth_id linked yet)
+const isPendingInvite = (clerkId?: string, authId?: string | null) => !authId && clerkId?.startsWith('invite_');
 export default async function AdminTrainersPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
   const user = await getCurrentUserData();
@@ -74,7 +74,7 @@ export default async function AdminTrainersPage({ searchParams }: { searchParams
             </div>
           ) : (
             trainers.map((trainer) => {
-              const pending = isPendingInvite(trainer.clerk_id);
+              const pending = isPendingInvite(trainer.clerk_id, trainer.auth_id);
               return (
                 <div key={trainer.id} className="p-4 space-y-3">
                   {/* Header: Info + Actions */}
@@ -158,7 +158,7 @@ export default async function AdminTrainersPage({ searchParams }: { searchParams
               </tr>
             ) : (
               trainers.map((trainer) => {
-                const pending = isPendingInvite(trainer.clerk_id);
+                const pending = isPendingInvite(trainer.clerk_id, trainer.auth_id);
                 
                 return (
                 <tr key={trainer.id} className="border-b border-border hover:bg-muted/30 transition-colors">

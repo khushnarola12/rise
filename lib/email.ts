@@ -10,9 +10,8 @@ interface InvitationResult {
 
 /**
  * Send an invitation email via Clerk
- * This creates a Clerk invitation that sends an email with a magic link
- * When the user clicks the link, they can sign up and will be automatically
- * linked to their pre-created user record in Supabase (via lib/auth.ts)
+ * This creates a Clerk Invitation - user receives email with sign-up link.
+ * No public signup page exists - only invited users can join.
  */
 export async function sendInvitationEmail(
   email: string,
@@ -21,40 +20,23 @@ export async function sendInvitationEmail(
   lastName: string
 ): Promise<InvitationResult> {
   try {
-    const clerk = await clerkClient();
-    
-    // Sanitize the app URL - remove trailing slashes
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/+$/, '');
     
-    if (!appUrl) {
-      console.error('❌ NEXT_PUBLIC_APP_URL is not configured!');
-      return {
-        success: false,
-        message: 'Server configuration error: App URL not set'
-      };
-    }
+    console.log(`📧 Sending Clerk invitation to ${email} for role: ${role}`);
     
-    // The redirectUrl is where users go AFTER completing the sign-up via invitation
-    // This should be the auth callback to handle role-based redirection
-    const redirectUrl = `${appUrl}/api/auth/callback`;
-    console.log(`📧 Sending invitation to ${email} with redirect: ${redirectUrl}`);
-    
-    // Create invitation via Clerk
-    // This sends an email with a sign-up link
+    const clerk = await clerkClient();
     const invitation = await clerk.invitations.createInvitation({
       emailAddress: email,
-      redirectUrl,
+      redirectUrl: `${appUrl}/`,
       publicMetadata: {
         role,
         firstName,
-        lastName,
-        invitedAt: new Date().toISOString()
+        lastName
       },
-      // Notify = true means Clerk will send the email
-      notify: true
+      ignoreExisting: true
     });
 
-    console.log(`✉️ Invitation sent successfully to ${email} for role: ${role}, invitation ID: ${invitation.id}`);
+    console.log(`✉️ Invitation sent successfully: ${invitation.id}`);
     
     return {
       success: true,
@@ -62,26 +44,20 @@ export async function sendInvitationEmail(
       invitationId: invitation.id
     };
   } catch (error: any) {
-    console.error('Failed to send invitation:', error);
+    console.error('Failed to send Clerk invitation:', error);
     
-    // Handle specific Clerk errors
-    if (error?.errors?.[0]?.code === 'form_identifier_exists') {
-      return {
-        success: false,
-        message: 'This email already has a Clerk account. They can sign in directly.'
-      };
-    }
+    const errorMsg = error.errors?.[0]?.message || error.message || 'Failed to send invitation';
     
-    if (error?.errors?.[0]?.code === 'duplicate_record') {
-      return {
-        success: false,
-        message: 'An invitation has already been sent to this email.'
-      };
+    if (errorMsg.includes('already_exists')) {
+       return {
+         success: false,
+         message: 'This email is already invited or registered.'
+       };
     }
 
     return {
       success: false,
-      message: error?.message || 'Failed to send invitation email. Please try again.'
+      message: errorMsg
     };
   }
 }
@@ -92,7 +68,11 @@ export async function sendInvitationEmail(
 export async function revokeInvitation(invitationId: string): Promise<InvitationResult> {
   try {
     const clerk = await clerkClient();
-    await clerk.invitations.revokeInvitation(invitationId);
+    const invitation = await clerk.invitations.revokeInvitation(invitationId);
+    
+    if (invitation.status !== 'revoked') {
+        throw new Error('Failed to revoke invitation');
+    }
     
     return {
       success: true,
@@ -102,25 +82,8 @@ export async function revokeInvitation(invitationId: string): Promise<Invitation
     console.error('Failed to revoke invitation:', error);
     return {
       success: false,
-      message: error?.message || 'Failed to revoke invitation'
+      message: error.message || 'Failed to revoke invitation'
     };
-  }
-}
-
-/**
- * Get pending invitations for an email
- */
-export async function getPendingInvitation(email: string) {
-  try {
-    const clerk = await clerkClient();
-    const invitations = await clerk.invitations.getInvitationList({
-      status: 'pending'
-    });
-    
-    return invitations.data.find(inv => inv.emailAddress === email);
-  } catch (error) {
-    console.error('Failed to check invitations:', error);
-    return null;
   }
 }
 
@@ -133,21 +96,21 @@ export async function resendInvitation(
   firstName: string,
   lastName: string
 ): Promise<InvitationResult> {
-  try {
-    // First, try to find and revoke any existing invitation
-    const existingInvitation = await getPendingInvitation(email);
-    
-    if (existingInvitation) {
-      await revokeInvitation(existingInvitation.id);
+  return await sendInvitationEmail(email, role, firstName, lastName);
+}
+
+/**
+ * Get pending invitation for an email
+ */
+export async function getPendingInvitation(email: string) {
+    try {
+        const clerk = await clerkClient();
+        const invitations = await clerk.invitations.getInvitationList({
+            status: 'pending'
+        });
+        
+        return invitations.data.find(inv => inv.emailAddress === email) || null;
+    } catch (e) {
+        return null;
     }
-    
-    // Send a new invitation
-    return await sendInvitationEmail(email, role, firstName, lastName);
-  } catch (error: any) {
-    console.error('Failed to resend invitation:', error);
-    return {
-      success: false,
-      message: error?.message || 'Failed to resend invitation'
-    };
-  }
 }

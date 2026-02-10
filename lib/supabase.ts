@@ -3,13 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Client-side Supabase client with optimizations
+// Client-side Supabase client (database only - NOT used for auth)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
   global: {
     headers: {
       'x-application-name': 'rise-fitness',
@@ -20,8 +15,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-
-
 // Database types
 export type UserRole = 'superuser' | 'admin' | 'trainer' | 'user';
 export type MealType = 'breakfast' | 'lunch' | 'snacks' | 'dinner';
@@ -31,7 +24,8 @@ export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'frida
 
 export interface User {
   id: string;
-  clerk_id: string;
+  auth_id: string | null;
+  clerk_id?: string;
   email: string;
   first_name: string | null;
   last_name: string | null;

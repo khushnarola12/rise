@@ -1,19 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { User } from '@/lib/supabase';
 import { ThemeToggle } from '@/components/theme-toggle';
-
-// Dynamic import UserButton to prevent hydration mismatch
-const UserButton = dynamic(
-  () => import('@clerk/nextjs').then((mod) => mod.UserButton),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-muted animate-pulse" />
-    )
-  }
-);
+import { UserMenu } from '@/components/user-menu';
 
 interface HeaderProps {
   user: User;
@@ -46,16 +35,9 @@ export function Header({ user }: HeaderProps) {
           <ThemeToggle />
         </div>
         <div className="transition-transform duration-200 hover:scale-105">
-          <UserButton 
-            appearance={{
-              elements: {
-                avatarBox: "w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-border hover:ring-primary transition-all duration-200"
-              }
-            }}
-          />
+          <UserMenu user={user} />
         </div>
       </div>
     </header>
   );
 }
-

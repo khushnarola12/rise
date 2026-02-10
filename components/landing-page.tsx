@@ -38,7 +38,7 @@ export default function LandingPage() {
         </div>
 
         <Link 
-          href="/sign-in"
+                href="/login"
           className="px-6 py-2 bg-white text-black text-sm font-bold uppercase tracking-wider hover:bg-primary hover:scale-105 transition-all skew-x-[-12deg]"
         >
           <span className="block skew-x-[12deg]">Login</span>
@@ -83,7 +83,7 @@ export default function LandingPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Link 
-                href="/sign-in"
+                      href="/login"
                 className="group relative inline-flex items-center gap-4 px-10 py-3 text-white text-base font-bold uppercase tracking-widest overflow-hidden rounded-full border border-white/20 bg-white/5 backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10 z-50"
               >
                 <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />

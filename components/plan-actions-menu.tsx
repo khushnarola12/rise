@@ -64,14 +64,14 @@ export function PlanActionsMenu({ planId, planType, planName }: PlanActionsMenuP
         }}
         className={cn(
           "p-1.5 rounded-lg transition-all duration-200 touch-manipulation",
-          "hover:bg-muted/80 active:scale-95",
-          isOpen ? "bg-muted" : "bg-muted/50"
+          "hover:bg-white/20 active:scale-95",
+          isOpen ? "bg-white/20" : ""
         )}
         aria-label="Plan actions"
       >
         <MoreVertical className={cn(
-          "w-5 h-5 transition-transform duration-200",
-          isOpen ? "text-foreground rotate-90" : "text-muted-foreground"
+          "w-5 h-5 transition-transform duration-200 text-white drop-shadow-md",
+          isOpen && "rotate-90"
         )} />
       </button>
 

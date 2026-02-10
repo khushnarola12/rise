@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreVertical, Pencil, Trash2, X, Check } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, X, Check, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { deleteUser, toggleUserStatus } from '@/app/actions/users';
+import { deleteUser, toggleUserStatus, resendUserInvitation } from '@/app/actions/users';
 
 interface UserActionsMenuProps {
   userId: string;
@@ -29,8 +29,8 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
     try {
       await deleteUser(userId, userRole);
       setIsOpen(false);
-    } catch (error) {
-      alert('Failed to delete user');
+    } catch (error: any) {
+      alert(error.message || 'Failed to delete user');
     } finally {
       setIsLoading(false);
     }
@@ -41,8 +41,21 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
     try {
       await toggleUserStatus(userId, newStatus, userRole);
       setIsOpen(false);
-    } catch (error) {
-      alert('Failed to update status');
+    } catch (error: any) {
+      alert(error.message || 'Failed to update status');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleResendInvite() {
+    setIsLoading(true);
+    try {
+      await resendUserInvitation(userId, userRole);
+      alert('Invitation sent successfully');
+      setIsOpen(false);
+    } catch (error: any) {
+      alert(error.message || 'Failed to send invitation');
     } finally {
       setIsLoading(false);
     }
@@ -122,6 +135,15 @@ export function UserActionsMenu({ userId, userRole, isActive }: UserActionsMenuP
                   Activate
                 </button>
               )}
+
+              <button
+                disabled={isLoading}
+                onClick={handleResendInvite}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors text-left"
+              >
+                <Mail className="w-4 h-4" />
+                Resend Invite
+              </button>
 
               <div className="h-px bg-border my-1" />
               

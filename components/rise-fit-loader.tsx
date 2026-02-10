@@ -1,27 +1,27 @@
 'use client';
 
-export default function Loading() {
+export default function RiseFitLoader() {
   return (
-    <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9999]">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center text-center bg-background/80 backdrop-blur-sm">
       <div className="relative inline-block">
         {/* Outline Text (Background) */}
         <h1
-          className="text-6xl md:text-9xl font-black italic tracking-tighter text-transparent select-none leading-none"
-          style={{ WebkitTextStroke: '2px rgba(255,255,255,0.15)' }}
+          className="text-5xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-transparent select-none leading-none"
+          style={{ WebkitTextStroke: '1.5px rgba(255,255,255,0.15)' }}
         >
           RISE.FIT
         </h1>
 
         {/* Filled Text (Foreground - Clip Mask Animating) */}
         <div className="absolute inset-0 overflow-hidden rise-clip-mask">
-          <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter text-primary select-none whitespace-nowrap leading-none">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-primary select-none whitespace-nowrap leading-none">
             RISE.FIT
           </h1>
         </div>
       </div>
 
       {/* Animated loading bar */}
-      <div className="mt-10 w-40 sm:w-48 h-[3px] bg-white/10 rounded-full overflow-hidden">
+      <div className="mt-8 w-32 sm:w-40 h-[3px] bg-muted/30 rounded-full overflow-hidden">
         <div className="h-full bg-primary rounded-full rise-bar-slide" />
       </div>
 

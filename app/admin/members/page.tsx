@@ -8,8 +8,8 @@ import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
 
-// Helper to check if user has claimed their account
-const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
+// Helper to check if user has claimed their account (no auth_id linked yet)
+const isPendingInvite = (clerkId?: string, authId?: string | null) => !authId && clerkId?.startsWith('invite_');
 
 export default async function AdminMembersPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
@@ -74,7 +74,7 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
              </div>
           ) : (
             members.map((member) => {
-              const pending = isPendingInvite(member.clerk_id);
+              const pending = isPendingInvite(member.clerk_id, member.auth_id);
               return (
                 <div key={member.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
@@ -170,7 +170,7 @@ export default async function AdminMembersPage({ searchParams }: { searchParams:
                 </tr>
               ) : (
                 members.map((member) => {
-                  const pending = isPendingInvite(member.clerk_id);
+                  const pending = isPendingInvite(member.clerk_id, member.auth_id);
                   
                   return (
                   <tr key={member.id} className="border-b border-border hover:bg-muted/30 transition-colors">

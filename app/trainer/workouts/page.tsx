@@ -1,10 +1,25 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Plus, Calendar, Users, Target } from 'lucide-react'; // Search removed
+import { Dumbbell, Plus, Calendar, Users, Target } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 
 export const dynamic = 'force-dynamic';
+
+const WORKOUT_IMAGES = [
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80",
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80",
+  "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80",
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&q=80",
+  "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80",
+  "https://images.unsplash.com/photo-1574680096141-1c57c502aa8f?w=800&q=80",
+];
+
+const DIFFICULTY_CONFIG = {
+  beginner: { color: 'from-emerald-500 to-green-400', badge: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  intermediate: { color: 'from-amber-500 to-yellow-400', badge: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  advanced: { color: 'from-rose-500 to-red-400', badge: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
+} as const;
 
 export default async function TrainerWorkoutsPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
@@ -12,7 +27,7 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-[50vh] text-center space-y-4">
+      <div className="flex flex-col items-center justify-center h-[50vh] text-center space-y-4 animate-in fade-in duration-500">
         <div className="p-4 bg-red-500/10 rounded-full text-red-500">
           <Dumbbell className="w-8 h-8" />
         </div>
@@ -24,14 +39,12 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
     );
   }
 
-  // Fetch ALL workout plans in the gym (trainer can see and assign any)
-  const { data: plans, error } = await supabaseAdmin
+  const { data: plans } = await supabaseAdmin
     .from('workout_plans')
     .select('*, users:created_by(first_name, last_name)')
     .eq('gym_id', user.gym_id)
     .order('created_at', { ascending: false });
 
-  // Count how many members are using each plan
   const planIds = plans?.map(p => p.id) || [];
   const { data: planUsage } = planIds.length > 0 ? await supabaseAdmin
     .from('user_workout_plans')
@@ -47,7 +60,6 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
     return acc;
   }, {}) || {};
 
-  // Filter plans based on search query
   const filteredPlans = plans?.filter((plan) => {
     if (!q) return true;
     const authorName = plan.users ? `${plan.users.first_name} ${plan.users.last_name}` : '';
@@ -56,9 +68,9 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
   }) || [];
 
   return (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom duration-500">
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
             My Workout Plans
@@ -69,7 +81,7 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
         </div>
         <Link
           href="/trainer/workouts/new"
-          className="w-full sm:w-auto px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-primary/25"
         >
           <Plus className="w-5 h-5" />
           Create Plan
@@ -77,33 +89,34 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
       </div>
 
       {/* Search */}
-      <div className="mb-6 max-w-md">
-        <URLSearchInput placeholder="Search workout plans..." />
+      <div className="animate-in fade-in slide-in-from-bottom duration-500 delay-100 fill-mode-both">
+        <div className="mb-6 max-w-md">
+          <URLSearchInput placeholder="Search workout plans..." />
+        </div>
       </div>
 
       {/* Workout Plans Grid */}
       {filteredPlans && filteredPlans.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPlans.map((plan) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {filteredPlans.map((plan, i) => {
             const usage = usageMap[plan.id] || { total: 0, active: 0 };
+            const difficulty = (plan.difficulty as keyof typeof DIFFICULTY_CONFIG) || 'beginner';
+            const config = DIFFICULTY_CONFIG[difficulty] || DIFFICULTY_CONFIG.beginner;
             
             return (
               <div
                 key={plan.id}
-                className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                className="bg-card border border-border rounded-2xl overflow-hidden group hover:shadow-lg hover:border-border/80 transition-all duration-300 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both"
+                style={{ animationDelay: `${Math.min(i * 80, 400)}ms` }}
               >
-                <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500" />
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                <div className={`h-1.5 bg-gradient-to-r ${config.color} transition-all duration-300 group-hover:h-2`} />
+                <div className="p-5 sm:p-6 space-y-4">
+                  <div className="flex justify-between items-start gap-3">
+                    <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-2">
                       {plan.name}
                     </h3>
                     {plan.difficulty && (
-                      <span className={`px-2 py-1 rounded text-xs font-medium uppercase tracking-wider ${
-                        plan.difficulty === 'beginner' ? 'bg-green-500/10 text-green-500' :
-                        plan.difficulty === 'intermediate' ? 'bg-yellow-500/10 text-yellow-600' :
-                        'bg-red-500/10 text-red-500'
-                      }`}>
+                      <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${config.badge}`}>
                         {plan.difficulty}
                       </span>
                     )}
@@ -115,14 +128,14 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
 
                   <div className="flex flex-wrap gap-2">
                     {plan.duration_weeks && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-lg">
+                        <Calendar className="w-3.5 h-3.5" />
                         {plan.duration_weeks} weeks
                       </div>
                     )}
                     {plan.target_muscle_groups && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Target className="w-4 h-4" />
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-lg">
+                        <Target className="w-3.5 h-3.5" />
                         {Array.isArray(plan.target_muscle_groups) 
                           ? plan.target_muscle_groups.slice(0, 2).join(', ')
                           : plan.target_muscle_groups}
@@ -132,21 +145,21 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
 
                   <div className="pt-4 border-t border-border flex items-center justify-between">
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground font-medium">{usage.active}</span>
-                        <span className="text-muted-foreground">active</span>
+                        <span className="text-foreground font-semibold">{usage.active}</span>
+                        <span className="text-muted-foreground text-xs">active</span>
                       </div>
-                      <span className="text-muted-foreground">•</span>
+                      <span className="text-border">•</span>
                       <span className="text-xs text-muted-foreground">
                         By {plan.users?.first_name || 'Admin'}
                       </span>
                     </div>
                     <Link
                       href={`/trainer/workouts/${plan.id}`}
-                      className="text-sm text-primary hover:underline"
+                      className="text-sm text-primary hover:underline font-medium hover:text-primary/80 transition-colors"
                     >
-                      View Details
+                      View →
                     </Link>
                   </div>
                 </div>
@@ -155,8 +168,8 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
           })}
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <Dumbbell className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <div className="bg-card border border-border rounded-2xl p-12 text-center animate-in fade-in duration-500">
+          <Dumbbell className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-20" />
           <h2 className="text-xl font-semibold text-foreground mb-2">
             No Workout Plans Yet
           </h2>

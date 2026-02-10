@@ -1,6 +1,6 @@
-import { SignOutButton } from '@clerk/nextjs';
 import { AlertTriangle, Lock, UserX } from 'lucide-react';
 import Link from 'next/link';
+import { SignOutBtn } from '@/components/sign-out-btn';
 
 export default async function UnauthorizedPage({
   searchParams,
@@ -48,15 +48,13 @@ export default async function UnauthorizedPage({
           <p className="text-muted-foreground mb-6">{message.description}</p>
 
           <div className="space-y-3">
-            <SignOutButton>
-              <button className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
-                Sign Out
-              </button>
-            </SignOutButton>
+            <SignOutBtn className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold disabled:opacity-50">
+              Sign Out
+            </SignOutBtn>
 
             <Link
               href="/"
-              className="block w-full px-6 py-3 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors font-medium"
+              className="block w-full px-6 py-3 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors font-medium text-center"
             >
               Back to Home
             </Link>

@@ -18,13 +18,23 @@ async function getAnalytics(gymId: string) {
   // Fallback: Client-side Aggregation (Slower, but works if SQL script not run)
   console.warn("Using fallback analytics aggregation (Run 'analytics_optimization.sql' for speed)");
   
-  const [financeResult, profilesResult] = await Promise.all([
-    supabaseAdmin.from('financial_transactions').select('amount, type').eq('gym_id', gymId),
-    supabaseAdmin.from('user_profiles').select('salary').not('salary', 'is', null)
+  // Fetch financial transactions filtered by gym_id
+  // Fetch user profiles filtered by gym_id using inner join with users table
+  const [financeResult, payrollResult] = await Promise.all([
+    supabaseAdmin
+      .from('financial_transactions')
+      .select('amount, type')
+      .eq('gym_id', gymId),
+    supabaseAdmin
+      .from('users')
+      .select('user_profiles!inner(salary)')
+      .eq('gym_id', gymId)
+      .eq('is_active', true)
+      .not('user_profiles.salary', 'is', null)
   ]);
 
   const transactions = financeResult.data || [];
-  const profiles = profilesResult.data || [];
+  const payrollData = payrollResult.data || [];
 
   const revenue = transactions
     .filter(t => t.type === 'revenue')
@@ -34,7 +44,10 @@ async function getAnalytics(gymId: string) {
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-  const payroll = profiles.reduce((sum, p) => sum + Number(p.salary || 0), 0);
+  const payroll = payrollData.reduce((sum: number, u: any) => {
+    const salary = u.user_profiles?.salary || 0;
+    return sum + Number(salary);
+  }, 0);
 
   return {
     revenue,

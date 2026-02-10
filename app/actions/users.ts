@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentUserData } from '@/lib/auth';
 import { UserRole } from '@/lib/supabase';
 import { sendInvitationEmail } from '@/lib/email';
+import { clerkClient } from '@clerk/nextjs/server';
 
 interface CreateUserState {
   message?: string;
@@ -28,10 +29,6 @@ export async function createUser(
   const lastName = formData.get('lastName') as string;
   const phone = formData.get('phone') as string;
   
-  // Specific fields for members if needed in future
-  // const height = formData.get('height'); 
-  // const weight = formData.get('weight');
-
   if (!email || !firstName || !lastName || !role) {
     return { error: 'Missing required fields' };
   }
@@ -53,7 +50,8 @@ export async function createUser(
       .single();
 
     if (existingUser) {
-      return { error: `User with email ${email} already exists.` };
+      const existingRole = existingUser.role === 'user' ? 'Member' : existingUser.role.charAt(0).toUpperCase() + existingUser.role.slice(1);
+      return { error: `This user cannot be assigned multiple roles. The email "${email}" is already registered as a ${existingRole}.` };
     }
 
     // Generate placeholder ID
@@ -85,7 +83,6 @@ export async function createUser(
     // 1. Handle Membership Plan (for Users)
     const planId = formData.get('planId') as string;
     if (role === 'user' && planId) {
-      // Fetch plan details
       const { data: plan } = await supabaseAdmin
         .from('membership_plans')
         .select('*')
@@ -97,7 +94,6 @@ export async function createUser(
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + plan.duration_days);
 
-        // Create Membership Record
         await supabaseAdmin.from('user_memberships').insert({
           user_id: newUser.id,
           plan_id: plan.id,
@@ -107,7 +103,6 @@ export async function createUser(
           amount_paid: plan.price
         });
 
-        // Record Revenue Transaction
         await supabaseAdmin.from('financial_transactions').insert({
           gym_id: currentUser.gym_id,
           type: 'revenue',
@@ -117,13 +112,11 @@ export async function createUser(
           related_user_id: newUser.id
         });
         
-        // Initialize Profile
         await supabaseAdmin.from('user_profiles').insert({
           user_id: newUser.id
         });
       }
     } else if (role === 'user') {
-      // Initialize Profile without plan
       await supabaseAdmin.from('user_profiles').insert({
         user_id: newUser.id
       });
@@ -132,7 +125,6 @@ export async function createUser(
     // 2. Handle Salary (for Trainers)
     const salary = formData.get('salary');
     if (role === 'trainer' && salary) {
-      // Create profile if not exists (trainers might need profiles too)
       await supabaseAdmin.from('user_profiles').insert({
         user_id: newUser.id,
         salary: Number(salary)
@@ -140,11 +132,10 @@ export async function createUser(
     }
 
     // 3. Send Invitation Email
-    const inviteResult = await sendInvitationEmail(email, role as 'trainer' | 'user', firstName, lastName);
+    const inviteResult = await sendInvitationEmail(email, role as 'admin' | 'trainer' | 'user', firstName, lastName);
     
     if (!inviteResult.success) {
       console.warn(`User created but invitation email failed: ${inviteResult.message}`);
-      // Don't fail the operation - user is created, they can still sign up manually
     } else {
       console.log(`✅ ${role} created and invitation sent: ${email}`);
     }
@@ -168,6 +159,13 @@ export async function deleteUser(userId: string, role: string) {
     throw new Error('Unauthorized');
   }
 
+  // 0. Fetch user to get clerk_id before deletion
+  const { data: userToDelete } = await supabaseAdmin
+    .from('users')
+    .select('clerk_id')
+    .eq('id', userId)
+    .single();
+
   // 1. Unlink Financial Transactions (Preserve history, remove link)
   await supabaseAdmin
     .from('financial_transactions')
@@ -177,10 +175,14 @@ export async function deleteUser(userId: string, role: string) {
   // 2. Unlink Created Content (if Trainer/Admin)
   await supabaseAdmin.from('workout_plans').update({ created_by: null }).eq('created_by', userId);
   await supabaseAdmin.from('diet_plans').update({ created_by: null }).eq('created_by', userId);
+  await supabaseAdmin.from('announcements').update({ created_by: null }).eq('created_by', userId);
   
-  // 3. Unlink Assignments (assigned_by)
+  // 3. Unlink Assignments & Logs
   await supabaseAdmin.from('user_workout_plans').update({ assigned_by: null }).eq('assigned_by', userId);
   await supabaseAdmin.from('user_diet_plans').update({ assigned_by: null }).eq('assigned_by', userId);
+  await supabaseAdmin.from('trainer_assignments').update({ assigned_by: null }).eq('assigned_by', userId);
+  await supabaseAdmin.from('attendance').update({ marked_by: null }).eq('marked_by', userId);
+  await supabaseAdmin.from('progress_logs').update({ logged_by: null }).eq('logged_by', userId);
 
   // 4. Hard Delete User (Cascades to profiles, etc.)
   const { error } = await supabaseAdmin.from('users').delete().eq('id', userId);
@@ -188,6 +190,17 @@ export async function deleteUser(userId: string, role: string) {
   if (error) {
     console.error('Delete failed:', error);
     throw new Error(`Failed to delete user: ${error.message}`);
+  }
+
+  // 5. Delete from Clerk if linked
+  if (userToDelete?.clerk_id && userToDelete.clerk_id.startsWith('user_')) {
+    try {
+      const clerk = await clerkClient();
+      await clerk.users.deleteUser(userToDelete.clerk_id);
+      console.log('Deleted Clerk user:', userToDelete.clerk_id);
+    } catch (e) {
+      console.error('Failed to delete Clerk user:', e);
+    }
   }
   
   if (role === 'admin') {
@@ -267,4 +280,35 @@ export async function updateUser(userId: string, formData: FormData) {
 
   revalidatePath(redirectPath);
   redirect(redirectPath);
+}
+
+export async function resendUserInvitation(userId: string, role: string) {
+  const currentUser = await getCurrentUserData();
+  if (!currentUser || !['superuser', 'admin'].includes(currentUser.role)) {
+    throw new Error('Unauthorized');
+  }
+
+  // Fetch user details
+  const { data: user } = await supabaseAdmin
+    .from('users')
+    .select('email, first_name, last_name')
+    .eq('id', userId)
+    .single();
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const result = await sendInvitationEmail(
+    user.email,
+    role as 'admin' | 'trainer' | 'user',
+    user.first_name,
+    user.last_name
+  );
+
+  if (!result.success) {
+    throw new Error(result.message);
+  }
+
+  return result;
 }

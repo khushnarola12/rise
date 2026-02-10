@@ -40,14 +40,14 @@ export default async function UserDietLibraryDetailPage({ params }: PageProps) {
   }, {});
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="animate-in fade-in slide-in-from-bottom duration-500">
         <Link
           href="/user/diet/library"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group/back"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover/back:-translate-x-1" />
           Back to Library
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -77,7 +77,7 @@ export default async function UserDietLibraryDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Meal Schedule */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card border border-border rounded-xl p-5 sm:p-6">
+      <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
             <h2 className="text-lg font-semibold text-foreground mb-4">Meal Schedule</h2>
             
             {Object.keys(mealsByDay).length > 0 ? (
@@ -92,7 +92,7 @@ export default async function UserDietLibraryDetailPage({ params }: PageProps) {
                       {dayMeals.map((meal: any) => (
                         <div
                           key={meal.id}
-                          className="p-4 bg-muted/30 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                          className="p-4 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 hover:border-border hover:shadow-md transition-all duration-300 group/meal"
                         >
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export default async function UserDietLibraryDetailPage({ params }: PageProps) {
         {/* Sidebar - Stats */}
         <div className="space-y-6">
           {/* Target Macros */}
-          <div className="bg-card border border-border rounded-xl p-5 sm:p-6">
+          <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '200ms' }}>
             <h2 className="text-lg font-semibold text-foreground mb-4">Target Daily Macros</h2>
             <div className="space-y-4">
               <div className="p-4 bg-orange-500/10 rounded-lg flex items-center justify-between">

@@ -17,7 +17,7 @@ import {
   Palette,
   Settings
 } from 'lucide-react';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutBtn } from '@/components/sign-out-btn';
 import { updateOwnProfile } from '@/app/actions/member-self-service';
 
 interface ProfileSettingsProps {
@@ -183,12 +183,10 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
           </div>
         </div>
 
-        <SignOutButton>
-          <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-            <LogOut className="w-5 h-5" />
-            <span>Sign Out</span>
-          </button>
-        </SignOutButton>
+        <SignOutBtn className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+          <LogOut className="w-5 h-5" />
+          <span>Sign Out</span>
+        </SignOutBtn>
       </div>
     </div>
   );

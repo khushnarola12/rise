@@ -29,7 +29,8 @@ export default async function AdminsPage({ searchParams }: { searchParams: Promi
 
   const { data: admins } = await query.order('created_at', { ascending: false });
 
-  const isPendingInvite = (clerkId: string) => clerkId?.startsWith('invite_');
+  // Helper to check if user has claimed their account (no auth_id linked yet)
+  const isPendingInvite = (clerkId?: string, authId?: string | null) => !authId && clerkId?.startsWith('invite_');
   
   // Count active admins for revenue calculation
   const totalAdmins = admins?.length || 0;
@@ -77,7 +78,7 @@ export default async function AdminsPage({ searchParams }: { searchParams: Promi
             </div>
           ) : (
             admins.map((admin) => {
-              const pending = isPendingInvite(admin.clerk_id);
+              const pending = isPendingInvite(admin.clerk_id, admin.auth_id);
               return (
                 <div key={admin.id} className="p-4 space-y-3">
                   {/* Top Row: User Info + Actions */}
@@ -169,7 +170,7 @@ export default async function AdminsPage({ searchParams }: { searchParams: Promi
               </tr>
             ) : (
               admins.map((admin) => {
-                const pending = isPendingInvite(admin.clerk_id);
+                const pending = isPendingInvite(admin.clerk_id, admin.auth_id);
                 
                 return (
                   <tr key={admin.id} className="border-b border-border hover:bg-muted/30">

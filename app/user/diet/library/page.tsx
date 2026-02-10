@@ -65,14 +65,14 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
   }) || [];
 
   return (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
-      <div>
+      <div className="animate-in fade-in slide-in-from-bottom duration-500">
         <Link
           href="/user/diet"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group/back"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover/back:-translate-x-1" />
           Back to My Plan
         </Link>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -88,7 +88,7 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
       </div>
 
       {/* Search */}
-      <div className="mb-6 max-w-md">
+      <div className="mb-6 max-w-md animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
         <URLSearchInput placeholder="Search diet plans..." />
       </div>
 
@@ -102,7 +102,8 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
               <Link
                 key={plan.id}
                 href={`/user/diet/library/${plan.id}`}
-                className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block"
+                className="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 block animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both"
+                style={{ animationDelay: `${Math.min(i * 80, 400)}ms` }}
               >
                   {/* Background Image */}
                   <div className="absolute inset-0">
@@ -174,7 +175,7 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
           })}
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-12 text-center">
+        <div className="bg-card border border-border rounded-2xl p-12 text-center animate-in fade-in duration-500">
           <Utensils className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-foreground mb-2">
             No Diet Plans Found

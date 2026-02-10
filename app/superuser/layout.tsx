@@ -37,9 +37,9 @@ export default async function SuperuserLayout({
 }) {
   const user = await getCurrentUserData();
 
-  // Strict role check
+  // Strict role check - only superusers allowed
   if (!user || user.role !== 'superuser') {
-    redirect('/unauthorized?reason=insufficient_permissions');
+    redirect(user ? '/' : '/login');
   }
 
   return (
@@ -59,7 +59,7 @@ export default async function SuperuserLayout({
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header user={user} />
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto pb-20 md:pb-8">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
           {children}
         </main>
       </div>

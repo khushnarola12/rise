@@ -106,9 +106,9 @@ export default async function UserWorkoutPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="animate-in fade-in slide-in-from-bottom duration-500">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
@@ -130,7 +130,7 @@ export default async function UserWorkoutPage() {
 
       {/* Active Workout Plan */}
       {activeWorkoutPlan ? (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
           <div className="h-1.5 bg-gradient-to-r from-purple-500 to-pink-500" />
           <div className="p-5 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-5">
@@ -173,10 +173,10 @@ export default async function UserWorkoutPage() {
                   {exercises.map((exercise: any, index: number) => (
                     <div
                       key={exercise.id}
-                      className="p-4 bg-muted/50 rounded-lg border border-border/50"
+                      className="p-4 bg-muted/30 rounded-xl border border-border/50 hover:bg-muted/50 hover:border-border hover:shadow-md transition-all duration-300 group/card"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm flex-shrink-0">
+                        <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-sm flex-shrink-0 group-hover/card:bg-purple-500/20 transition-colors">
                           {index + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -240,7 +240,7 @@ export default async function UserWorkoutPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-8 text-center space-y-6">
+        <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-6 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '100ms' }}>
           <div className="space-y-2">
             <Dumbbell className="w-14 h-14 text-muted-foreground/30 mx-auto" />
             <h2 className="text-lg font-semibold text-foreground">
@@ -257,7 +257,7 @@ export default async function UserWorkoutPage() {
                 <Link 
                   key={plan.id}
                   href={`/user/workout/library/${plan.id}`}
-                  className="group relative overflow-hidden rounded-xl h-48 flex flex-col justify-end p-5 transition-all hover:shadow-xl hover:-translate-y-1 block"
+                  className="group relative overflow-hidden rounded-2xl h-48 flex flex-col justify-end p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 block"
                 >
                   {/* Background Image */}
                   <div className="absolute inset-0">
@@ -297,7 +297,7 @@ export default async function UserWorkoutPage() {
 
       {/* Previous Plans */}
       {previousPlanDetails.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 sm:p-6">
+        <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 animate-in fade-in slide-in-from-bottom duration-500 fill-mode-both" style={{ animationDelay: '200ms' }}>
           <h3 className="text-base font-semibold text-foreground mb-4">
             Previous Plans
           </h3>
@@ -305,7 +305,7 @@ export default async function UserWorkoutPage() {
             {previousPlanDetails.map((plan: any) => (
               <div
                 key={plan.id}
-                className="flex items-center justify-between p-3 sm:p-4 bg-muted/50 rounded-lg"
+                className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-all duration-200"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">

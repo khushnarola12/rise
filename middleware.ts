@@ -1,33 +1,13 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-// Define protected routes for each role
-const isSuperuserRoute = createRouteMatcher(['/superuser(.*)']);
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
-const isTrainerRoute = createRouteMatcher(['/trainer(.*)']);
-const isUserRoute = createRouteMatcher(['/user(.*)']);
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/']);
+const isPublicRoute = createRouteMatcher(['/', '/login(.*)']) as any;
 
-export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-  const { pathname } = req.nextUrl;
-
-  // Allow public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    const { userId, redirectToSignIn } = await auth()
+    if (!userId) return redirectToSignIn()
   }
-
-  // Require authentication for all protected routes
-  if (!userId) {
-    const signInUrl = new URL('/sign-in', req.url);
-    signInUrl.searchParams.set('redirect_url', pathname);
-    return NextResponse.redirect(signInUrl);
-  }
-
-  // Role-based route protection will be handled in the layout
-  // This middleware just ensures authentication
-  return NextResponse.next();
-});
+})
 
 export const config = {
   matcher: [
@@ -36,5 +16,4 @@ export const config = {
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-};
-   
+}

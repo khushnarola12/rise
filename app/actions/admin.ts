@@ -49,12 +49,8 @@ export async function createAdmin(prevState: CreateAdminState, formData: FormDat
       .single();
 
     if (existingUser) {
-      if (existingUser.role === 'admin') {
-        return { error: 'A user with this email is already an admin.' };
-      } else {
-        // Option to upgrade user? For now just error.
-        return { error: `User already exists with role: ${existingUser.role}. Edit their profile to change role.` };
-      }
+      const existingRole = existingUser.role === 'user' ? 'Member' : existingUser.role.charAt(0).toUpperCase() + existingUser.role.slice(1);
+      return { error: `This user cannot be assigned multiple roles. The email "${email}" is already registered as a ${existingRole}.` };
     }
 
     // Calculate subscription expiry (1 year from now)

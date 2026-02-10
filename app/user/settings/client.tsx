@@ -17,7 +17,7 @@ import {
   Palette,
   Sparkles
 } from 'lucide-react';
-import { SignOutButton } from '@clerk/nextjs';
+import { SignOutBtn } from '@/components/sign-out-btn';
 import { updateOwnProfile } from '@/app/actions/member-self-service';
 
 interface SettingsClientProps {
@@ -211,12 +211,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
           </div>
         </div>
 
-        <SignOutButton>
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold hover-lift transition-all flex items-center justify-center gap-3 glow-sm hover:glow-md">
-            <LogOut className="w-5 h-5" />
-            <span>Sign Out</span>
-          </button>
-        </SignOutButton>
+        <SignOutBtn className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold hover-lift transition-all flex items-center justify-center gap-3 glow-sm hover:glow-md">
+          <LogOut className="w-5 h-5" />
+          <span>Sign Out</span>
+        </SignOutBtn>
       </div>
     </div>
   );

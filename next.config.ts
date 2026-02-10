@@ -11,11 +11,15 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'img.clerk.com',
+        hostname: '*.googleusercontent.com',
       },
       {
         protocol: 'https',
         hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
       },
     ],
     formats: ['image/avif', 'image/webp'],

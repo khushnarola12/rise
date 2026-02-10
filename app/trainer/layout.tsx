@@ -46,9 +46,9 @@ export default async function TrainerLayout({
 }) {
   const user = await getCurrentUserData();
 
-  // Strict role check
-  if (!user || user.role !== 'trainer') {
-    redirect('/unauthorized?reason=insufficient_permissions');
+  // Allow trainer, admin, and superuser access
+  if (!user || !['trainer', 'admin', 'superuser'].includes(user.role)) {
+    redirect(user ? '/' : '/login');
   }
 
   return (
@@ -68,7 +68,7 @@ export default async function TrainerLayout({
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header user={user} />
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto pb-20 md:pb-8">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
           {children}
         </main>
       </div>
