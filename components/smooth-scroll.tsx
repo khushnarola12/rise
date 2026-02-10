@@ -1,20 +1,48 @@
 'use client';
 
-import { ReactLenis } from 'lenis/react';
+import { ReactLenis, useLenis } from 'lenis/react';
+import { useEffect, useRef } from 'react';
+
+function LenisRAF() {
+  const lenis = useLenis();
+  const rafRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!lenis) return;
+
+    function raf(time: number) {
+      lenis?.raf(time);
+      rafRef.current = requestAnimationFrame(raf);
+    }
+
+    rafRef.current = requestAnimationFrame(raf);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [lenis]);
+
+  return null;
+}
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
-  // Configuration for a premium smooth scrolling experience
-  const lenisOptions = {
-    lerp: 0.1,         // The "smoothness" factor. Lower values = smoother (more momentum), higher = more instant. 0.1 is a sweet spot.
-    duration: 1.2,     // The duration of the scroll animation.
-    smoothWheel: true, // Enable smooth scrolling for mouse wheel events.
-    wheelMultiplier: 1,// The multiplier for the mouse wheel event delta.
-    touchMultiplier: 2,// The multiplier for the touch event delta.
-    infinite: false,   // Infinite scrolling.
-  };
-
   return (
-    <ReactLenis root options={lenisOptions}>
+    <ReactLenis
+      root
+      options={{
+        lerp: 0.08,          // Lower = smoother/more momentum. 0.08 gives a buttery feel.
+        smoothWheel: true,    // Enable smooth scrolling for mouse wheel events.
+        wheelMultiplier: 0.8, // Slightly reduce scroll speed for a premium feel.
+        touchMultiplier: 1.5, // Touch scroll multiplier.
+        infinite: false,
+        syncTouch: true,      // Sync touch events for smooth touch scrolling on mobile.
+        syncTouchLerp: 0.06,  // Touch smoothing factor.
+        autoResize: true,     // Auto-resize on window resize.
+      }}
+    >
+      <LenisRAF />
       {children}
     </ReactLenis>
   );
