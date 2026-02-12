@@ -46,6 +46,11 @@ export default async function AdminLayout({
     redirect(user ? '/' : '/login');
   }
 
+  // Check if admin's account has been deactivated by superuser
+  if (user.role === 'admin' && !user.is_active) {
+    redirect('/unauthorized?reason=gym_deactivated');
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar

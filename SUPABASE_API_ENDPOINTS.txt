@@ -1,0 +1,1394 @@
+================================================================================
+  RISE FITNESS — SUPABASE API REFERENCE FOR FLUTTER
+  App: Gym Management System (Multi-tenant, Role-based)
+  Backend: Supabase (Database only — NO Supabase Auth, NO Storage, NO Edge Functions)
+  Auth: Clerk (handled separately)
+  Generated: 2026-02-11
+================================================================================
+
+  ROLES: superuser | admin | trainer | user (member)
+  HIERARCHY: superuser > admin > trainer > user
+
+  NOTE: All queries use supabase service-role key on Next.js server.
+        For Flutter, use Supabase client with RLS policies OR
+        call a backend API layer. Adjust auth accordingly.
+
+================================================================================
+  TABLE SCHEMAS (16 Tables + 1 Settings Table)
+================================================================================
+
+1. gyms
+   - id (UUID, PK)
+   - name (VARCHAR 255)
+   - address (TEXT)
+   - phone (VARCHAR 20)
+   - email (VARCHAR 255)
+   - logo_url (TEXT)
+   - description (TEXT)
+   - subscription_expires_at (TIMESTAMPTZ)
+   - created_at (TIMESTAMPTZ)
+   - updated_at (TIMESTAMPTZ)
+
+2. users
+   - id (UUID, PK)
+   - clerk_id (VARCHAR 255, UNIQUE)
+   - email (VARCHAR 255, UNIQUE)
+   - first_name (VARCHAR 100)
+   - last_name (VARCHAR 100)
+   - phone (VARCHAR 20)
+   - role (ENUM: superuser | admin | trainer | user)
+   - gym_id (UUID, FK → gyms.id)
+   - avatar_url (TEXT)
+   - is_active (BOOLEAN, default true)
+   - created_at (TIMESTAMPTZ)
+   - updated_at (TIMESTAMPTZ)
+
+3. user_profiles
+   - id (UUID, PK)
+   - user_id (UUID, FK → users.id, UNIQUE)
+   - date_of_birth (DATE)
+   - gender (VARCHAR 20)
+   - height_cm (DECIMAL 5,2)
+   - current_weight_kg (DECIMAL 5,2)
+   - target_weight_kg (DECIMAL 5,2)
+   - bmi (DECIMAL 5,2)
+   - fitness_goal (TEXT)
+   - medical_conditions (TEXT)
+   - emergency_contact (VARCHAR 20)
+   - salary (DECIMAL 10,2)  ← for trainers/staff
+   - created_at (TIMESTAMPTZ)
+   - updated_at (TIMESTAMPTZ)
+
+4. trainer_assignments
+   - id (UUID, PK)
+   - trainer_id (UUID, FK → users.id)
+   - user_id (UUID, FK → users.id)
+   - assigned_at (TIMESTAMPTZ)
+   - assigned_by (UUID, FK → users.id)
+   - is_active (BOOLEAN)
+   - UNIQUE(trainer_id, user_id)
+
+5. workout_plans
+   - id (UUID, PK)
+   - name (VARCHAR 255)
+   - description (TEXT)
+   - created_by (UUID, FK → users.id)
+   - gym_id (UUID, FK → gyms.id)
+   - difficulty (ENUM: beginner | intermediate | advanced)
+   - duration_weeks (INT)
+   - is_template (BOOLEAN)
+   - created_at (TIMESTAMPTZ)
+   - updated_at (TIMESTAMPTZ)
+
+6. workout_exercises
+   - id (UUID, PK)
+   - workout_plan_id (UUID, FK → workout_plans.id)
+   - day (ENUM: monday–sunday)
+   - exercise_name (VARCHAR 255)
+   - description (TEXT)
+   - sets (INT)
+   - reps (INT)
+   - rest_seconds (INT)
+   - exercise_order (INT)
+   - video_url (TEXT)
+   - created_at (TIMESTAMPTZ)
+
+7. user_workout_plans
+   - id (UUID, PK)
+   - user_id (UUID, FK → users.id)
+   - workout_plan_id (UUID, FK → workout_plans.id)
+   - assigned_by (UUID, FK → users.id)
+   - assigned_at (TIMESTAMPTZ)
+   - start_date (DATE)
+   - end_date (DATE)
+   - is_active (BOOLEAN)
+   - notes (TEXT)
+
+8. diet_plans
+   - id (UUID, PK)
+   - name (VARCHAR 255)
+   - description (TEXT)
+   - created_by (UUID, FK → users.id)
+   - gym_id (UUID, FK → gyms.id)
+   - diet_preference (ENUM: veg | non_veg | custom)
+   - total_calories (INT)
+   - is_template (BOOLEAN)
+   - created_at (TIMESTAMPTZ)
+   - updated_at (TIMESTAMPTZ)
+
+9. diet_plan_meals
+   - id (UUID, PK)
+   - diet_plan_id (UUID, FK → diet_plans.id)
+   - meal_type (ENUM: breakfast | lunch | snacks | dinner)
+   - meal_name (VARCHAR 255)
+   - description (TEXT)
+   - calories (INT)
+   - protein_g (DECIMAL 5,2)
+   - carbs_g (DECIMAL 5,2)
+   - fats_g (DECIMAL 5,2)
+   - meal_order (INT)
+   - created_at (TIMESTAMPTZ)
+
+10. user_diet_plans
+    - id (UUID, PK)
+    - user_id (UUID, FK → users.id)
+    - diet_plan_id (UUID, FK → diet_plans.id)
+    - assigned_by (UUID, FK → users.id)
+    - assigned_at (TIMESTAMPTZ)
+    - start_date (DATE)
+    - end_date (DATE)
+    - is_active (BOOLEAN)
+    - notes (TEXT)
+
+11. attendance
+    - id (UUID, PK)
+    - user_id (UUID, FK → users.id)
+    - gym_id (UUID, FK → gyms.id)
+    - check_in_time (TIMESTAMPTZ)
+    - check_out_time (TIMESTAMPTZ)
+    - marked_by (UUID, FK → users.id)
+    - date (DATE, default CURRENT_DATE)
+    - notes (TEXT)
+    - created_at (TIMESTAMPTZ)
+
+12. progress_logs
+    - id (UUID, PK)
+    - user_id (UUID, FK → users.id)
+    - weight_kg (DECIMAL 5,2)
+    - bmi (DECIMAL 5,2)
+    - body_fat_percentage (DECIMAL 5,2)
+    - muscle_mass_kg (DECIMAL 5,2)
+    - notes (TEXT)
+    - logged_at (TIMESTAMPTZ)
+    - logged_by (UUID, FK → users.id)
+
+13. membership_plans
+    - id (UUID, PK)
+    - gym_id (UUID, FK → gyms.id)
+    - name (VARCHAR 100)
+    - description (TEXT)
+    - price (DECIMAL 10,2)
+    - duration_days (INT)
+    - created_at (TIMESTAMPTZ)
+
+14. user_memberships
+    - id (UUID, PK)
+    - user_id (UUID, FK → users.id)
+    - plan_id (UUID, FK → membership_plans.id)
+    - start_date (DATE)
+    - end_date (DATE)
+    - status (VARCHAR 20: active | expired | cancelled)
+    - amount_paid (DECIMAL 10,2)
+    - created_at (TIMESTAMPTZ)
+
+15. financial_transactions
+    - id (UUID, PK)
+    - gym_id (UUID, FK → gyms.id)
+    - type (VARCHAR 20: revenue | expense)
+    - category (VARCHAR 50: membership | trainer_salary | equipment | maintenance)
+    - amount (DECIMAL 10,2)
+    - description (TEXT)
+    - related_user_id (UUID, FK → users.id)
+    - transaction_date (DATE)
+    - created_at (TIMESTAMPTZ)
+
+16. announcements
+    - id (UUID, PK)
+    - gym_id (UUID, FK → gyms.id)
+    - title (VARCHAR 255)
+    - content (TEXT)
+    - type (VARCHAR 20: info | warning | success | important)
+    - created_by (UUID, FK → users.id)
+    - is_active (BOOLEAN)
+    - starts_at (TIMESTAMPTZ)
+    - ends_at (TIMESTAMPTZ)
+    - created_at (TIMESTAMPTZ)
+
+17. settings
+    - key (VARCHAR, PK)
+    - value (TEXT)
+    - updated_at (TIMESTAMPTZ)
+
+  RPC FUNCTION:
+    get_gym_analytics(p_gym_id UUID)
+    → Returns: { revenue, expenses, payroll, profit }
+
+
+================================================================================
+  ALL SUPABASE QUERIES (Dart SDK Format)
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 1: AUTHENTICATION & USER LOOKUP
+  Used by: All roles on login
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 1.1 — Find user by Clerk ID (primary login lookup)
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('clerk_id', clerkUserId)
+  .maybeSingle();
+
+// 1.2 — Fallback: Find user by email
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', email)
+  .maybeSingle();
+
+// 1.3 — Link Clerk account to existing user (migration)
+await supabase
+  .from('users')
+  .update({'clerk_id': newClerkId, 'avatar_url': avatarUrl})
+  .eq('id', userId);
+
+// 1.4 — Auto-create new user on first login (JIT provisioning)
+await supabase
+  .from('users')
+  .insert({
+    'clerk_id': clerkId,
+    'email': email,
+    'first_name': firstName,
+    'last_name': lastName,
+    'role': 'user',
+    'avatar_url': avatarUrl,
+    'is_active': true,
+  });
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 2: SUPERUSER — ADMIN MANAGEMENT
+  Access: superuser only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 2.1 — Check if email already exists
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', email)
+  .maybeSingle();
+
+// 2.2 — Create a new gym for the admin
+final gym = await supabase
+  .from('gyms')
+  .insert({
+    'name': gymName,
+    'address': address,
+    'phone': phone,
+    'email': email,
+    'description': description,
+    'subscription_expires_at': expiresAt,  // 1 year from now
+  })
+  .select()
+  .single();
+
+// 2.3 — Create admin user linked to gym
+await supabase
+  .from('users')
+  .insert({
+    'email': email,
+    'first_name': firstName,
+    'last_name': lastName,
+    'phone': phone,
+    'role': 'admin',
+    'clerk_id': 'invite_$uniqueId',  // placeholder until they sign up
+    'gym_id': gym['id'],
+    'is_active': true,
+  });
+
+// 2.4 — Rollback: delete gym if admin creation fails
+await supabase
+  .from('gyms')
+  .delete()
+  .eq('id', gymId);
+
+// 2.5 — List all admins (with optional search)
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('role', 'admin')
+  .order('created_at', ascending: false);
+
+// 2.5b — With search filter
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('role', 'admin')
+  .or('first_name.ilike.%$query%,last_name.ilike.%$query%,email.ilike.%$query%')
+  .order('created_at', ascending: false);
+
+// 2.6 — Get single admin by ID
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('id', adminId)
+  .single();
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 3: SUPERUSER — PLATFORM ANALYTICS
+  Access: superuser only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 3.1 — Count all gyms
+final res = await supabase
+  .from('gyms')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true));
+
+// 3.2 — Count users by role (repeat for each role)
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('role', 'user');  // or 'admin', 'trainer'
+
+// 3.3 — Count active admins
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('role', 'admin')
+  .eq('is_active', true);
+
+// 3.4 — Count workout plans (platform-wide)
+final res = await supabase
+  .from('workout_plans')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true));
+
+// 3.5 — Count diet plans (platform-wide)
+final res = await supabase
+  .from('diet_plans')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true));
+
+// 3.6 — List gyms with details (latest 10)
+final gyms = await supabase
+  .from('gyms')
+  .select('id, name, email, phone, created_at')
+  .order('created_at', ascending: false)
+  .limit(10);
+
+// 3.7 — Count members per gym
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('gym_id', gymId)
+  .eq('role', 'user');
+
+// 3.8 — Count trainers per gym
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('gym_id', gymId)
+  .eq('role', 'trainer');
+
+// 3.9 — Recent check-ins (platform-wide, latest 5)
+final res = await supabase
+  .from('attendance')
+  .select('*, users(first_name, last_name)')
+  .order('check_in_time', ascending: false)
+  .limit(5);
+
+// 3.10 — Get gym profile
+final res = await supabase
+  .from('gyms')
+  .select('*')
+  .single();
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 4: SUPERUSER — SETTINGS
+  Access: superuser only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 4.1 — Get revenue_per_admin setting
+final res = await supabase
+  .from('settings')
+  .select('value')
+  .eq('key', 'revenue_per_admin')
+  .maybeSingle();
+// Default: 12000 if not found
+
+// 4.2 — Update revenue_per_admin setting
+await supabase
+  .from('settings')
+  .upsert({
+    'key': 'revenue_per_admin',
+    'value': newValue.toString(),
+    'updated_at': DateTime.now().toIso8601String(),
+  }, onConflict: 'key');
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 5: ADMIN — USER (MEMBER/TRAINER) MANAGEMENT
+  Access: admin (scoped to their gym_id)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 5.1 — Check duplicate email before creating user
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('email', email)
+  .maybeSingle();
+
+// 5.2 — Create new member or trainer
+final user = await supabase
+  .from('users')
+  .insert({
+    'email': email,
+    'first_name': firstName,
+    'last_name': lastName,
+    'phone': phone,
+    'role': role,  // 'user' or 'trainer'
+    'clerk_id': 'invite_$uniqueId',
+    'gym_id': adminGymId,
+    'is_active': true,
+  })
+  .select()
+  .single();
+
+// 5.3 — Create blank profile for new user
+await supabase
+  .from('user_profiles')
+  .insert({
+    'user_id': user['id'],
+    'salary': salary,  // only for trainers, null for members
+  });
+
+// 5.4 — If member: fetch membership plan
+final plan = await supabase
+  .from('membership_plans')
+  .select('*')
+  .eq('id', planId)
+  .single();
+
+// 5.5 — If member: create membership record
+await supabase
+  .from('user_memberships')
+  .insert({
+    'user_id': user['id'],
+    'plan_id': planId,
+    'start_date': startDate,
+    'end_date': endDate,
+    'status': 'active',
+    'amount_paid': plan['price'],
+  });
+
+// 5.6 — If member: record membership payment as revenue
+await supabase
+  .from('financial_transactions')
+  .insert({
+    'gym_id': adminGymId,
+    'type': 'revenue',
+    'category': 'membership',
+    'amount': plan['price'],
+    'description': '${firstName} ${lastName} - ${plan['name']} membership',
+    'related_user_id': user['id'],
+  });
+
+// 5.7 — List members (with optional search)
+var query = supabase
+  .from('users')
+  .select('*, user_profiles(*)')
+  .eq('role', 'user')
+  .eq('gym_id', adminGymId);
+
+if (searchQuery != null) {
+  query = query.or(
+    'first_name.ilike.%$searchQuery%,last_name.ilike.%$searchQuery%,email.ilike.%$searchQuery%'
+  );
+}
+
+final members = await query.order('created_at', ascending: false);
+
+// 5.8 — List trainers (with optional search)
+var query = supabase
+  .from('users')
+  .select('*')
+  .eq('role', 'trainer')
+  .eq('gym_id', adminGymId);
+
+if (searchQuery != null) {
+  query = query.or(
+    'first_name.ilike.%$searchQuery%,last_name.ilike.%$searchQuery%,email.ilike.%$searchQuery%'
+  );
+}
+
+final trainers = await query.order('created_at', ascending: false);
+
+// 5.9 — Get single user by ID
+final res = await supabase
+  .from('users')
+  .select('*')
+  .eq('id', userId)
+  .eq('gym_id', adminGymId)
+  .single();
+
+// 5.10 — Update user info
+await supabase
+  .from('users')
+  .update({
+    'first_name': firstName,
+    'last_name': lastName,
+    'phone': phone,
+  })
+  .eq('id', userId);
+
+// 5.11 — Update trainer salary in profile
+// First check if profile exists:
+final existing = await supabase
+  .from('user_profiles')
+  .select('id')
+  .eq('user_id', userId)
+  .maybeSingle();
+
+if (existing != null) {
+  await supabase
+    .from('user_profiles')
+    .update({'salary': salary})
+    .eq('user_id', userId);
+} else {
+  await supabase
+    .from('user_profiles')
+    .insert({'user_id': userId, 'salary': salary});
+}
+
+// 5.12 — Toggle user active/inactive
+await supabase
+  .from('users')
+  .update({'is_active': !currentStatus})
+  .eq('id', userId);
+
+// 5.13 — Delete user (with cascading cleanup)
+// Step 1: Unlink foreign key references
+await supabase.from('financial_transactions').update({'related_user_id': null}).eq('related_user_id', userId);
+await supabase.from('workout_plans').update({'created_by': null}).eq('created_by', userId);
+await supabase.from('diet_plans').update({'created_by': null}).eq('created_by', userId);
+await supabase.from('announcements').update({'created_by': null}).eq('created_by', userId);
+await supabase.from('user_workout_plans').update({'assigned_by': null}).eq('assigned_by', userId);
+await supabase.from('user_diet_plans').update({'assigned_by': null}).eq('assigned_by', userId);
+await supabase.from('trainer_assignments').update({'assigned_by': null}).eq('assigned_by', userId);
+await supabase.from('attendance').update({'marked_by': null}).eq('marked_by', userId);
+await supabase.from('progress_logs').update({'logged_by': null}).eq('logged_by', userId);
+// Step 2: Delete the user (cascades to profile, assignments, etc.)
+await supabase.from('users').delete().eq('id', userId);
+
+// 5.14 — Get membership plans for a gym (for "Add Member" form)
+final plans = await supabase
+  .from('membership_plans')
+  .select('*')
+  .eq('gym_id', adminGymId);
+
+// 5.15 — Resend invitation: fetch user info
+final res = await supabase
+  .from('users')
+  .select('email, first_name, last_name')
+  .eq('id', userId)
+  .single();
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 6: ADMIN — DASHBOARD & ANALYTICS
+  Access: admin (scoped to their gym_id)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 6.1 — Count members in gym
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('role', 'user')
+  .eq('gym_id', gymId);
+
+// 6.2 — Count trainers in gym
+final res = await supabase
+  .from('users')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('role', 'trainer')
+  .eq('gym_id', gymId);
+
+// 6.3 — Count workout plans in gym
+final res = await supabase
+  .from('workout_plans')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('gym_id', gymId);
+
+// 6.4 — Count diet plans in gym
+final res = await supabase
+  .from('diet_plans')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('gym_id', gymId);
+
+// 6.5 — Today's attendance for gym
+final res = await supabase
+  .from('attendance')
+  .select('*, users(first_name, last_name)')
+  .eq('gym_id', gymId)
+  .gte('check_in_time', todayDateString)  // '2026-02-11'
+  .order('check_in_time', ascending: false);
+
+// 6.6 — Gym subscription info
+final res = await supabase
+  .from('gyms')
+  .select('subscription_expires_at, created_at')
+  .eq('id', gymId)
+  .single();
+
+// 6.7 — Financial analytics via RPC (preferred)
+final res = await supabase
+  .rpc('get_gym_analytics', params: {'p_gym_id': gymId});
+// Returns: { revenue, expenses, payroll, profit }
+
+// 6.8 — Financial analytics FALLBACK: fetch transactions
+final res = await supabase
+  .from('financial_transactions')
+  .select('amount, type')
+  .eq('gym_id', gymId);
+// Then aggregate revenue/expenses in Dart
+
+// 6.9 — Financial analytics FALLBACK: fetch payroll
+final res = await supabase
+  .from('users')
+  .select('user_profiles!inner(salary)')
+  .eq('gym_id', gymId)
+  .eq('is_active', true)
+  .not('user_profiles.salary', 'is', null);
+// Then sum salaries in Dart
+
+// 6.10 — Recent transactions (latest 5)
+final res = await supabase
+  .from('financial_transactions')
+  .select('id, description, category, amount, type, transaction_date')
+  .eq('gym_id', gymId)
+  .order('transaction_date', ascending: false)
+  .limit(5);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 7: WORKOUT PLANS (CRUD)
+  Access: admin, trainer (scoped to gym_id)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 7.1 — List all workout plans for a gym
+final res = await supabase
+  .from('workout_plans')
+  .select('*')
+  .eq('gym_id', gymId)
+  .order('created_at', ascending: false);
+
+// 7.2 — Get single workout plan with exercises
+final res = await supabase
+  .from('workout_plans')
+  .select('*, workout_exercises(*)')
+  .eq('id', planId)
+  .single();
+
+// 7.3 — Create workout plan
+final plan = await supabase
+  .from('workout_plans')
+  .insert({
+    'name': name,
+    'description': description,
+    'difficulty': difficulty,  // 'beginner' | 'intermediate' | 'advanced'
+    'duration_weeks': durationWeeks,
+    'gym_id': gymId,
+    'created_by': currentUserId,
+    'is_template': true,
+  })
+  .select()
+  .single();
+
+// 7.4 — Bulk insert exercises for a workout plan
+await supabase
+  .from('workout_exercises')
+  .insert(exercises.map((e) => {
+    return {
+      'workout_plan_id': plan['id'],
+      'day': e.day,
+      'exercise_name': e.name,
+      'description': e.description,
+      'sets': e.sets,
+      'reps': e.reps,
+      'rest_seconds': e.restSeconds,
+      'video_url': e.videoUrl,
+      'exercise_order': e.order,
+    };
+  }).toList());
+
+// 7.5 — Update workout plan
+await supabase
+  .from('workout_plans')
+  .update({
+    'name': name,
+    'description': description,
+    'difficulty': difficulty,
+    'duration_weeks': durationWeeks,
+  })
+  .eq('id', planId);
+
+// 7.6 — Delete old exercises then re-insert (for update)
+await supabase.from('workout_exercises').delete().eq('workout_plan_id', planId);
+// Then insert new exercises (same as 7.4)
+
+// 7.7 — Delete workout plan (cascade)
+await supabase.from('workout_exercises').delete().eq('workout_plan_id', planId);
+await supabase.from('user_workout_plans').delete().eq('workout_plan_id', planId);
+await supabase.from('workout_plans').delete().eq('id', planId);
+
+// 7.8 — Count usage of each plan (for trainer view)
+final res = await supabase
+  .from('user_workout_plans')
+  .select('workout_plan_id')
+  .inFilter('workout_plan_id', planIds);
+
+// 7.9 — Get exercises for a plan (ordered)
+final res = await supabase
+  .from('workout_exercises')
+  .select('*')
+  .eq('workout_plan_id', planId)
+  .order('exercise_order', ascending: true);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 8: DIET PLANS (CRUD)
+  Access: admin, trainer (scoped to gym_id)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 8.1 — List all diet plans for a gym
+final res = await supabase
+  .from('diet_plans')
+  .select('*')
+  .eq('gym_id', gymId)
+  .order('created_at', ascending: false);
+
+// 8.2 — Get single diet plan with meals
+final res = await supabase
+  .from('diet_plans')
+  .select('*, diet_plan_meals(*)')
+  .eq('id', planId)
+  .single();
+
+// 8.3 — Create diet plan
+final plan = await supabase
+  .from('diet_plans')
+  .insert({
+    'name': name,
+    'description': description,
+    'diet_preference': dietPreference,  // 'veg' | 'non_veg' | 'custom'
+    'total_calories': totalCalories,
+    'gym_id': gymId,
+    'created_by': currentUserId,
+    'is_template': true,
+  })
+  .select()
+  .single();
+
+// 8.4 — Bulk insert meals for a diet plan
+await supabase
+  .from('diet_plan_meals')
+  .insert(meals.map((m) => {
+    return {
+      'diet_plan_id': plan['id'],
+      'meal_type': m.type,  // 'breakfast' | 'lunch' | 'snacks' | 'dinner'
+      'meal_name': m.name,
+      'description': m.description,
+      'calories': m.calories,
+      'protein_g': m.protein,
+      'carbs_g': m.carbs,
+      'fats_g': m.fats,
+      'meal_order': m.order,
+    };
+  }).toList());
+
+// 8.5 — Update diet plan
+await supabase
+  .from('diet_plans')
+  .update({
+    'name': name,
+    'description': description,
+    'diet_preference': dietPreference,
+    'total_calories': totalCalories,
+  })
+  .eq('id', planId);
+
+// 8.6 — Delete old meals then re-insert (for update)
+await supabase.from('diet_plan_meals').delete().eq('diet_plan_id', planId);
+// Then insert new meals (same as 8.4)
+
+// 8.7 — Delete diet plan (cascade)
+await supabase.from('diet_plan_meals').delete().eq('diet_plan_id', planId);
+await supabase.from('user_diet_plans').delete().eq('diet_plan_id', planId);
+await supabase.from('diet_plans').delete().eq('id', planId);
+
+// 8.8 — Count usage of each plan (for trainer view)
+final res = await supabase
+  .from('user_diet_plans')
+  .select('diet_plan_id')
+  .inFilter('diet_plan_id', planIds);
+
+// 8.9 — Get meals for a plan (ordered)
+final res = await supabase
+  .from('diet_plan_meals')
+  .select('*')
+  .eq('diet_plan_id', planId)
+  .order('meal_order', ascending: true);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 9: TRAINER — ASSIGNMENTS & MEMBER MANAGEMENT
+  Access: admin (assign/unassign), trainer (view assigned members)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 9.1 — Get all members assigned to a trainer
+final res = await supabase
+  .from('trainer_assignments')
+  .select('*, users:user_id(id, first_name, last_name, email, avatar_url, phone, is_active)')
+  .eq('trainer_id', trainerId)
+  .eq('is_active', true);
+
+// 9.2 — Get trainers assigned to a member
+final res = await supabase
+  .from('trainer_assignments')
+  .select('*, users:trainer_id(id, first_name, last_name, email, phone)')
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// 9.3 — Assign trainer to member
+// Step 1: Deactivate ALL existing trainer assignments for this member
+await supabase
+  .from('trainer_assignments')
+  .update({'is_active': false})
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// Step 2: Check if this specific assignment already exists
+final existing = await supabase
+  .from('trainer_assignments')
+  .select('id')
+  .eq('trainer_id', trainerId)
+  .eq('user_id', memberId)
+  .maybeSingle();
+
+// Step 3: Reactivate or create new
+if (existing != null) {
+  await supabase
+    .from('trainer_assignments')
+    .update({'is_active': true, 'assigned_at': DateTime.now().toIso8601String()})
+    .eq('id', existing['id']);
+} else {
+  await supabase
+    .from('trainer_assignments')
+    .insert({
+      'trainer_id': trainerId,
+      'user_id': memberId,
+      'assigned_by': currentUserId,
+      'is_active': true,
+    });
+}
+
+// 9.4 — Unassign trainer from member
+await supabase
+  .from('trainer_assignments')
+  .update({'is_active': false})
+  .eq('trainer_id', trainerId)
+  .eq('user_id', memberId);
+
+// 9.5 — Verify trainer is assigned to member (authorization)
+final res = await supabase
+  .from('trainer_assignments')
+  .select('id')
+  .eq('trainer_id', currentUserId)
+  .eq('user_id', memberId)
+  .eq('is_active', true)
+  .maybeSingle();
+
+// 9.6 — Get available trainers for a gym
+final res = await supabase
+  .from('users')
+  .select('id, first_name, last_name, email')
+  .eq('role', 'trainer')
+  .eq('gym_id', gymId)
+  .eq('is_active', true);
+
+// 9.7 — Get user profiles for assigned members
+final res = await supabase
+  .from('user_profiles')
+  .select('*')
+  .inFilter('user_id', memberIds);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 10: WORKOUT/DIET PLAN ASSIGNMENTS TO MEMBERS
+  Access: admin, trainer (for their assigned members)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 10.1 — Assign workout plan to member
+// Step 1: Deactivate current active plan
+await supabase
+  .from('user_workout_plans')
+  .update({'is_active': false})
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// Step 2: Create new assignment
+await supabase
+  .from('user_workout_plans')
+  .insert({
+    'user_id': memberId,
+    'workout_plan_id': planId,
+    'assigned_by': currentUserId,
+    'assigned_at': DateTime.now().toIso8601String(),
+    'end_date': endDate,
+    'is_active': true,
+  });
+
+// 10.2 — Unassign workout plan from member
+await supabase
+  .from('user_workout_plans')
+  .update({'is_active': false})
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// 10.3 — Assign diet plan to member
+// Step 1: Deactivate current active plan
+await supabase
+  .from('user_diet_plans')
+  .update({'is_active': false})
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// Step 2: Create new assignment
+await supabase
+  .from('user_diet_plans')
+  .insert({
+    'user_id': memberId,
+    'diet_plan_id': planId,
+    'assigned_by': currentUserId,
+    'assigned_at': DateTime.now().toIso8601String(),
+    'end_date': endDate,
+    'is_active': true,
+  });
+
+// 10.4 — Unassign diet plan from member
+await supabase
+  .from('user_diet_plans')
+  .update({'is_active': false})
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// 10.5 — Get member's active workout plan
+final res = await supabase
+  .from('user_workout_plans')
+  .select('*, workout_plans(*)')
+  .eq('user_id', memberId)
+  .eq('is_active', true)
+  .maybeSingle();
+
+// 10.6 — Get member's active diet plan
+final res = await supabase
+  .from('user_diet_plans')
+  .select('*, diet_plans(*)')
+  .eq('user_id', memberId)
+  .eq('is_active', true)
+  .maybeSingle();
+
+// 10.7 — Get all member assignments (for detail page)
+// Run these 3 in parallel:
+final trainerAssignment = supabase
+  .from('trainer_assignments')
+  .select('*, users:trainer_id(id, first_name, last_name, email)')
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+final workoutAssignment = supabase
+  .from('user_workout_plans')
+  .select('*, workout_plans(*)')
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+final dietAssignment = supabase
+  .from('user_diet_plans')
+  .select('*, diet_plans(*)')
+  .eq('user_id', memberId)
+  .eq('is_active', true);
+
+// 10.8 — Get available workout plans for assignment
+final res = await supabase
+  .from('workout_plans')
+  .select('id, name, description, difficulty, duration_weeks')
+  .eq('gym_id', gymId);
+
+// 10.9 — Get available diet plans for assignment
+final res = await supabase
+  .from('diet_plans')
+  .select('id, name, description, diet_preference, total_calories')
+  .eq('gym_id', gymId);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 11: ATTENDANCE
+  Access: admin (gym-wide), trainer (assigned members), user (self)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 11.1 — Mark attendance (check-in)
+// Step 1: Check if already checked in today
+final existing = await supabase
+  .from('attendance')
+  .select('*')
+  .eq('user_id', memberId)
+  .eq('date', todayDate)  // 'YYYY-MM-DD'
+  .maybeSingle();
+
+// Step 2a: If not checked in, create check-in
+if (existing == null) {
+  // Get member's gym_id
+  final user = await supabase
+    .from('users')
+    .select('gym_id')
+    .eq('id', memberId)
+    .single();
+
+  await supabase
+    .from('attendance')
+    .insert({
+      'user_id': memberId,
+      'gym_id': user['gym_id'],
+      'date': todayDate,
+      'check_in_time': DateTime.now().toIso8601String(),
+      'marked_by': currentUserId,  // null for self-check-in
+    });
+}
+
+// Step 2b: If already checked in, mark check-out
+if (existing != null) {
+  await supabase
+    .from('attendance')
+    .update({'check_out_time': DateTime.now().toIso8601String()})
+    .eq('id', existing['id']);
+}
+
+// 11.2 — Get today's attendance for gym (admin dashboard)
+final res = await supabase
+  .from('attendance')
+  .select('*, users(first_name, last_name)')
+  .eq('gym_id', gymId)
+  .gte('check_in_time', todayDate)
+  .order('check_in_time', ascending: false);
+
+// 11.3 — Get today's attendance for trainer's members
+final res = await supabase
+  .from('attendance')
+  .select('*, users(first_name, last_name)')
+  .inFilter('user_id', memberIds)
+  .gte('check_in_time', todayDate)
+  .order('check_in_time', ascending: false);
+
+// 11.4 — Get attendance history for trainer's members
+final res = await supabase
+  .from('attendance')
+  .select('*')
+  .inFilter('user_id', memberIds)
+  .order('date', ascending: false);
+
+// 11.5 — Get member's attendance (last 30 records)
+final res = await supabase
+  .from('attendance')
+  .select('*')
+  .eq('user_id', memberId)
+  .order('date', ascending: false)
+  .limit(30);
+
+// 11.6 — Count member's attendance this month
+final res = await supabase
+  .from('attendance')
+  .select('*', const FetchOptions(count: CountOption.exact, head: true))
+  .eq('user_id', memberId)
+  .gte('date', thirtyDaysAgoDate);  // 'YYYY-MM-DD'
+
+// 11.7 — Self check-in (member)
+final existing = await supabase
+  .from('attendance')
+  .select('*')
+  .eq('user_id', currentUserId)
+  .eq('date', todayDate)
+  .maybeSingle();
+
+if (existing == null) {
+  await supabase
+    .from('attendance')
+    .insert({
+      'user_id': currentUserId,
+      'gym_id': userGymId,
+      'date': todayDate,
+      'check_in_time': DateTime.now().toIso8601String(),
+    });
+}
+
+// 11.8 — Self check-out (member)
+if (existing != null) {
+  await supabase
+    .from('attendance')
+    .update({'check_out_time': DateTime.now().toIso8601String()})
+    .eq('id', existing['id']);
+}
+
+// 11.9 — Get today's check-in status (member dashboard)
+final res = await supabase
+  .from('attendance')
+  .select('*')
+  .eq('user_id', currentUserId)
+  .eq('date', todayDate)
+  .maybeSingle();
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 12: PROGRESS TRACKING
+  Access: admin, trainer (for assigned members), user (self)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 12.1 — Log progress for a member (by trainer/admin)
+// Step 1: Get height for BMI
+final profile = await supabase
+  .from('user_profiles')
+  .select('height_cm')
+  .eq('user_id', memberId)
+  .maybeSingle();
+
+// Step 2: Calculate BMI
+// bmi = weightKg / ((heightCm / 100) * (heightCm / 100))
+
+// Step 3: Insert progress log
+await supabase
+  .from('progress_logs')
+  .insert({
+    'user_id': memberId,
+    'weight_kg': weightKg,
+    'bmi': calculatedBmi,
+    'body_fat_percentage': bodyFatPct,
+    'muscle_mass_kg': muscleMassKg,
+    'notes': notes,
+    'logged_by': currentUserId,
+  });
+
+// Step 4: Update member's current weight & BMI
+await supabase
+  .from('user_profiles')
+  .update({'current_weight_kg': weightKg, 'bmi': calculatedBmi})
+  .eq('user_id', memberId);
+
+// 12.2 — Self-log progress (member)
+// Same as 12.1 but logged_by = currentUserId and user_id = currentUserId
+
+// 12.3 — Get member's progress history
+final res = await supabase
+  .from('progress_logs')
+  .select('*')
+  .eq('user_id', memberId)
+  .order('logged_at', ascending: false);
+
+// 12.4 — Get progress logs for trainer's members
+final res = await supabase
+  .from('progress_logs')
+  .select('*')
+  .inFilter('user_id', memberIds)
+  .order('logged_at', ascending: false);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 13: MEMBER PROFILE & MEMBERSHIP
+  Access: admin (full), trainer (assigned), user (self)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 13.1 — Get member profile
+final res = await supabase
+  .from('user_profiles')
+  .select('*')
+  .eq('user_id', memberId)
+  .maybeSingle();
+
+// 13.2 — Update member profile (by admin/trainer)
+final existing = await supabase
+  .from('user_profiles')
+  .select('id, height_cm, current_weight_kg')
+  .eq('user_id', memberId)
+  .maybeSingle();
+
+// Calculate BMI if height and weight available
+// bmi = weightKg / ((heightCm / 100) * (heightCm / 100))
+
+if (existing != null) {
+  await supabase
+    .from('user_profiles')
+    .update({
+      'date_of_birth': dob,
+      'gender': gender,
+      'height_cm': heightCm,
+      'current_weight_kg': weightKg,
+      'target_weight_kg': targetWeight,
+      'bmi': calculatedBmi,
+      'fitness_goal': fitnessGoal,
+      'medical_conditions': medicalConditions,
+      'emergency_contact': emergencyContact,
+    })
+    .eq('user_id', memberId);
+} else {
+  await supabase
+    .from('user_profiles')
+    .insert({
+      'user_id': memberId,
+      // ... same fields as above
+    });
+}
+
+// 13.3 — Update own profile (member self-service)
+await supabase
+  .from('users')
+  .update({'phone': phone})
+  .eq('id', currentUserId);
+
+final existing = await supabase
+  .from('user_profiles')
+  .select('*')
+  .eq('user_id', currentUserId)
+  .maybeSingle();
+
+if (existing != null) {
+  await supabase
+    .from('user_profiles')
+    .update({
+      'height_cm': heightCm,
+      'target_weight_kg': targetWeight,
+      'fitness_goal': fitnessGoal,
+    })
+    .eq('user_id', currentUserId);
+} else {
+  await supabase
+    .from('user_profiles')
+    .insert({
+      'user_id': currentUserId,
+      'height_cm': heightCm,
+      'target_weight_kg': targetWeight,
+      'fitness_goal': fitnessGoal,
+    });
+}
+
+// 13.4 — Get/update membership
+final membership = await supabase
+  .from('user_memberships')
+  .select('*')
+  .eq('user_id', memberId)
+  .eq('status', 'active')
+  .order('end_date', ascending: false)
+  .limit(1)
+  .maybeSingle();
+
+// Update membership dates
+if (membership != null) {
+  await supabase
+    .from('user_memberships')
+    .update({'start_date': startDate, 'end_date': endDate})
+    .eq('id', membership['id']);
+} else {
+  await supabase
+    .from('user_memberships')
+    .insert({
+      'user_id': memberId,
+      'start_date': startDate,
+      'end_date': endDate,
+      'status': 'active',
+    });
+}
+
+// 13.5 — Get member's gym info
+final res = await supabase
+  .from('gyms')
+  .select('*')
+  .eq('id', userGymId)
+  .single();
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 14: ANNOUNCEMENTS
+  Access: admin (CRUD), all gym users (read active only)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 14.1 — Create announcement
+await supabase
+  .from('announcements')
+  .insert({
+    'gym_id': gymId,
+    'title': title,
+    'content': content,
+    'type': type,  // 'info' | 'warning' | 'success' | 'important'
+    'created_by': currentUserId,
+    'is_active': true,
+    'starts_at': startsAt,
+    'ends_at': endsAt,  // nullable
+  });
+
+// 14.2 — Get active announcements for gym
+final now = DateTime.now().toIso8601String();
+final res = await supabase
+  .from('announcements')
+  .select('*, author:created_by(first_name, last_name)')
+  .eq('gym_id', gymId)
+  .eq('is_active', true)
+  .lte('starts_at', now)
+  .or('ends_at.is.null,ends_at.gt.$now')
+  .order('created_at', ascending: false)
+  .limit(5);
+
+// 14.3 — Delete announcement
+await supabase
+  .from('announcements')
+  .delete()
+  .eq('id', announcementId)
+  .eq('gym_id', gymId);
+
+// 14.4 — Toggle announcement active/inactive
+final current = await supabase
+  .from('announcements')
+  .select('is_active')
+  .eq('id', announcementId)
+  .single();
+
+await supabase
+  .from('announcements')
+  .update({'is_active': !current['is_active']})
+  .eq('id', announcementId);
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MODULE 15: MEMBER DASHBOARD (Combined Queries)
+  Access: user (self only)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Run ALL of these in parallel for the member dashboard:
+
+final profile = supabase.from('user_profiles').select('*').eq('user_id', userId).maybeSingle();
+final trainers = supabase.from('trainer_assignments').select('*, users:trainer_id(id, first_name, last_name, email, phone)').eq('user_id', userId).eq('is_active', true);
+final workout = supabase.from('user_workout_plans').select('*, workout_plans(*)').eq('user_id', userId).eq('is_active', true).maybeSingle();
+final diet = supabase.from('user_diet_plans').select('*, diet_plans(*)').eq('user_id', userId).eq('is_active', true).maybeSingle();
+final attendanceCount = supabase.from('attendance').select('*', const FetchOptions(count: CountOption.exact, head: true)).eq('user_id', userId).gte('date', thirtyDaysAgo);
+final attendanceRecords = supabase.from('attendance').select('*').eq('user_id', userId).order('date', ascending: false).limit(30);
+final progressLogs = supabase.from('progress_logs').select('*').eq('user_id', userId).order('logged_at', ascending: false);
+final membership = supabase.from('user_memberships').select('*').eq('user_id', userId).eq('status', 'active').order('end_date', ascending: false).limit(1).maybeSingle();
+final suggestedWorkouts = supabase.from('workout_plans').select('*').eq('gym_id', userGymId).limit(3);
+final suggestedDiets = supabase.from('diet_plans').select('*').eq('gym_id', userGymId).limit(3);
+
+// Use Future.wait() in Dart to run all in parallel
+
+
+================================================================================
+  END OF API REFERENCE
+================================================================================
+
+  NOTES FOR FLUTTER DEV:
+  1. Replace Clerk auth with your chosen Flutter auth (Clerk Flutter SDK or similar)
+  2. All queries above use supabase-admin (service role) in Next.js.
+     In Flutter, you'll either:
+     a) Use Supabase RLS policies with user JWT tokens, OR
+     b) Create a backend API layer and call it from Flutter
+  3. BMI Formula: weight_kg / (height_cm / 100)^2
+  4. Streak calculation: count consecutive days with attendance records
+  5. Days remaining: membership.end_date - today
+  6. Each member can only have ONE active trainer, workout plan, and diet plan
+  7. The 'invite_xxx' clerk_id pattern means user hasn't signed up yet

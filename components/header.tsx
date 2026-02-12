@@ -3,6 +3,7 @@
 import { User } from '@/lib/supabase';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserMenu } from '@/components/user-menu';
+import { NotificationsDropdown } from '@/components/notifications-dropdown';
 
 interface HeaderProps {
   user: User;
@@ -34,6 +35,12 @@ export function Header({ user }: HeaderProps) {
         <div className="transition-transform duration-200 hover:scale-105 active:scale-95">
           <ThemeToggle />
         </div>
+        
+        {/* Notifications */}
+        <div className="transition-transform duration-200 hover:scale-105 active:scale-95">
+          <NotificationsDropdown />
+        </div>
+
         <div className="transition-transform duration-200 hover:scale-105">
           <UserMenu user={user} />
         </div>

@@ -1,4 +1,4 @@
-import { AlertTriangle, Lock, UserX } from 'lucide-react';
+import { AlertTriangle, Lock, UserX, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { SignOutBtn } from '@/components/sign-out-btn';
 
@@ -20,6 +20,11 @@ export default async function UnauthorizedPage({
       icon: Lock,
       title: 'Account Deactivated',
       description: 'Your account has been deactivated. Please contact your gym administrator for assistance.',
+    },
+    gym_deactivated: {
+      icon: Building2,
+      title: 'Gym Deactivated',
+      description: 'Your gym has been deactivated by the system administrator. All services are temporarily unavailable. Please contact your gym owner for more information.',
     },
     insufficient_permissions: {
       icon: AlertTriangle,

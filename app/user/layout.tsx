@@ -41,6 +41,11 @@ export default async function UserLayout({
     redirect(user ? '/' : '/login');
   }
 
+  // Check if member's account has been deactivated (gym deactivated by superuser)
+  if (user.role === 'user' && !user.is_active) {
+    redirect('/unauthorized?reason=gym_deactivated');
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar

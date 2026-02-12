@@ -217,6 +217,7 @@ export async function toggleUserStatus(userId: string, isActive: boolean, role: 
     throw new Error('Unauthorized');
   }
 
+  // Update the target user's status
   const { error } = await supabaseAdmin
     .from('users')
     .update({ is_active: isActive })
@@ -224,8 +225,81 @@ export async function toggleUserStatus(userId: string, isActive: boolean, role: 
     
   if (error) throw error;
 
-  if (role === 'admin') {
+  // ====================================================
+  // GYM-WIDE CASCADE: When superuser deactivates/activates an ADMIN
+  // All members, trainers in that gym are also affected
+  // ====================================================
+  if (role === 'admin' && currentUser.role === 'superuser') {
+    // Get the admin's gym_id
+    const { data: adminUser } = await supabaseAdmin
+      .from('users')
+      .select('gym_id, first_name, last_name')
+      .eq('id', userId)
+      .single();
+
+    if (adminUser?.gym_id) {
+      const gymId = adminUser.gym_id;
+
+      // Get the gym name for the notification
+      const { data: gym } = await supabaseAdmin
+        .from('gyms')
+        .select('name')
+        .eq('id', gymId)
+        .single();
+
+      const gymName = gym?.name || 'your gym';
+
+      // Get all users in this gym (trainers + members + the admin itself)
+      const { data: gymUsers } = await supabaseAdmin
+        .from('users')
+        .select('id, role')
+        .eq('gym_id', gymId);
+
+      if (gymUsers && gymUsers.length > 0) {
+        // Cascade status change to all trainers and members in the gym
+        const usersToUpdate = gymUsers.filter(u => u.role !== 'superuser' && u.id !== userId);
+        
+        if (usersToUpdate.length > 0) {
+          await supabaseAdmin
+            .from('users')
+            .update({ is_active: isActive })
+            .eq('gym_id', gymId)
+            .in('role', ['trainer', 'user']);
+        }
+
+        // Create notifications for ALL affected users (admin + trainers + members)
+        const notificationTitle = isActive 
+          ? '🎉 Gym Reactivated!' 
+          : '⚠️ Gym Deactivated';
+        
+        const notificationMessage = isActive
+          ? `Great news! "${gymName}" has been reactivated. You can now use the system again. Welcome back!`
+          : `"${gymName}" has been deactivated by the system administrator. Please contact your gym owner for more information. You will not be able to use the system until it is reactivated.`;
+
+        const notificationType = isActive ? 'gym_activated' : 'gym_deactivated';
+
+        // Insert notifications for all gym users
+        const notifications = gymUsers
+          .filter(u => u.role !== 'superuser')
+          .map(u => ({
+            user_id: u.id,
+            gym_id: gymId,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: notificationType,
+            is_read: false,
+          }));
+
+        if (notifications.length > 0) {
+          await supabaseAdmin
+            .from('notifications')
+            .insert(notifications);
+        }
+      }
+    }
+
     revalidatePath('/superuser/admins');
+    revalidatePath('/superuser/dashboard');
   } else {
     revalidatePath('/admin/trainers');
     revalidatePath('/admin/members');
