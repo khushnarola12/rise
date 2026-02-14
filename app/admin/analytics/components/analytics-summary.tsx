@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { TrendingUp, TrendingDown, DollarSign, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, IndianRupee, Users } from 'lucide-react';
 import { GradientStatCard } from '@/components/stat-card';
 
 async function getAnalytics(gymId: string) {
@@ -64,25 +64,25 @@ export default async function AnalyticsSummary({ gymId }: { gymId: string }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       <GradientStatCard
         title="Total Revenue"
-        value={`$${stats.revenue.toLocaleString()}`}
-        icon={DollarSign}
+        value={`₹${stats.revenue.toLocaleString()}`}
+        icon={IndianRupee}
         gradient="gradient-primary"
       />
       <GradientStatCard
         title="Net Profit"
-        value={`$${stats.profit.toLocaleString()}`}
+        value={`₹${stats.profit.toLocaleString()}`}
         icon={TrendingUp}
         gradient="gradient-secondary"
       />
       <GradientStatCard
         title="Total Expenses"
-        value={`$${stats.expenses.toLocaleString()}`}
+        value={`₹${stats.expenses.toLocaleString()}`}
         icon={TrendingDown}
         gradient="gradient-accent"
       />
       <GradientStatCard
         title="Monthly Payroll"
-        value={`$${stats.payroll.toLocaleString()}`}
+        value={`₹${stats.payroll.toLocaleString()}`}
         icon={Users}
         gradient="gradient-warning"
       />

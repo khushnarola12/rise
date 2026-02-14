@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DollarSign, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { IndianRupee, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface RevenueCardProps {
@@ -77,13 +77,13 @@ export function RevenueCard({
               </button>
             )}
           </div>
-          <h2 className="text-5xl font-bold mb-3">${totalRevenue.toLocaleString()}</h2>
+          <h2 className="text-5xl font-bold mb-3">₹{totalRevenue.toLocaleString()}</h2>
           
           {isEditing ? (
             <div className="flex items-center gap-3">
               <span className="text-emerald-100">{activeAdmins} Active Admin{activeAdmins !== 1 ? 's' : ''} ×</span>
               <div className="flex items-center bg-white/20 rounded-lg overflow-hidden">
-                <span className="px-2 text-white/80">$</span>
+                <span className="px-2 text-white/80">₹</span>
                 <input
                   type="number"
                   value={inputValue}
@@ -109,7 +109,7 @@ export function RevenueCard({
           ) : null}
         </div>
         <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center">
-          <DollarSign className="w-10 h-10" />
+          <IndianRupee className="w-10 h-10" />
         </div>
       </div>
     </div>

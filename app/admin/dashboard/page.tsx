@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { StatCard, GradientStatCard } from '@/components/stat-card';
-import { Users, UserCog, Dumbbell, Calendar, TrendingUp, Activity, DollarSign, TrendingDown, CreditCard, Loader2 } from 'lucide-react';
+import { Users, UserCog, Dumbbell, Calendar, TrendingUp, Activity, IndianRupee, TrendingDown, CreditCard, Loader2 } from 'lucide-react';
 
 // Analytics data fetcher
 async function getAnalytics(gymId: string) {
@@ -106,25 +106,25 @@ async function FinancialSummary({ gymId }: { gymId: string }) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <GradientStatCard
         title="Revenue"
-        value={`$${stats.revenue.toLocaleString()}`}
-        icon={DollarSign}
+        value={`₹${stats.revenue.toLocaleString()}`}
+        icon={IndianRupee}
         gradient="gradient-success"
       />
       <GradientStatCard
         title="Profit"
-        value={`$${stats.profit.toLocaleString()}`}
+        value={`₹${stats.profit.toLocaleString()}`}
         icon={TrendingUp}
         gradient="gradient-info"
       />
       <GradientStatCard
         title="Expenses"
-        value={`$${stats.expenses.toLocaleString()}`}
+        value={`₹${stats.expenses.toLocaleString()}`}
         icon={TrendingDown}
         gradient="gradient-warning"
       />
       <GradientStatCard
         title="Payroll"
-        value={`$${stats.payroll.toLocaleString()}`}
+        value={`₹${stats.payroll.toLocaleString()}`}
         icon={Users}
         gradient="gradient-accent"
       />

@@ -99,7 +99,7 @@ export default function MemberForm({ plans }: { plans: Plan[] }) {
               <option value="">No membership plan (can be assigned later)</option>
               {plans.map((plan) => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.name} - ${plan.price} / {plan.duration_days} days
+                  {plan.name} - ₹{plan.price} / {plan.duration_days} days
                 </option>
               ))}
             </select>
