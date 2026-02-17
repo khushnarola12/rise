@@ -25,10 +25,7 @@ export default async function UserWorkoutLibraryDetailPage({ params }: PageProps
     notFound();
   }
 
-  // Verify access (same gym)
-  if (plan.gym_id !== user.gym_id) {
-    return notFound();
-  }
+  // All users can view any plan in the global library
 
   const exercises = plan.workout_exercises?.sort((a: any, b: any) => a.exercise_order - b.exercise_order) || [];
 

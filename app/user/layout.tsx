@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUserData } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Sidebar, SidebarItem } from '@/components/sidebar';
 import { BottomNav } from '@/components/bottom-nav';
 import { Header } from '@/components/header';
@@ -46,6 +47,17 @@ export default async function UserLayout({
     redirect('/unauthorized?reason=gym_deactivated');
   }
 
+  // Fetch gym name for display
+  let gymName: string | null = null;
+  if (user.gym_id) {
+    const { data: gym } = await supabaseAdmin
+      .from('gyms')
+      .select('name')
+      .eq('id', user.gym_id)
+      .single();
+    gymName = gym?.name || null;
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar
@@ -62,7 +74,7 @@ export default async function UserLayout({
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <Header user={user} />
+        <Header user={user} gymName={gymName} />
         <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
           {children}
         </main>

@@ -4,14 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { LogOut, User as UserIcon, LayoutDashboard, Loader2 } from 'lucide-react'
+import { LogOut, User as UserIcon, LayoutDashboard, Loader2, Building2 } from 'lucide-react'
 import { User } from '@/lib/supabase'
 
 interface UserMenuProps {
   user: User
+  gymName?: string | null
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user, gymName }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -57,6 +58,12 @@ export function UserMenu({ user }: UserMenuProps) {
               <p className="text-xs text-muted-foreground truncate">
                 {user.email}
               </p>
+              {gymName && (
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
+                  <Building2 className="w-3 h-3" />
+                  {gymName}
+                </p>
+              )}
             </div>
             
             <div className="p-1 text-sm font-medium">

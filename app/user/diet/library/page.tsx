@@ -1,6 +1,6 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Utensils, Apple, Users, ArrowLeft, Search } from 'lucide-react';
+import { Utensils, Apple, Users, ArrowLeft, Search, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 
@@ -33,11 +33,10 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
     );
   }
 
-  // Fetch ALL diet plans in the gym
+  // Fetch ALL diet plans across all gyms (global library)
   const { data: plans } = await supabaseAdmin
     .from('diet_plans')
-    .select('*, users:created_by(first_name, last_name)')
-    .eq('gym_id', user.gym_id)
+    .select('*, users:created_by(first_name, last_name), gyms:gym_id(name)')
     .order('created_at', { ascending: false });
 
   // Count how many members are using each plan
@@ -81,7 +80,7 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
               Diet Library
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Browse all available nutrition programs in the gym
+              Browse all available nutrition programs across all gyms
             </p>
           </div>
         </div>
@@ -157,6 +156,14 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
                            <span className="block text-sm font-bold text-white">{plan.fat_grams}g</span>
                         </div>
                     </div>
+
+                    {/* Gym Name Badge */}
+                    {plan.gyms?.name && (
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                        <span className="text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
                       <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">

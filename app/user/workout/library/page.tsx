@@ -1,6 +1,6 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Calendar, Users, Target, ArrowLeft } from 'lucide-react';
+import { Dumbbell, Calendar, Users, Target, ArrowLeft, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 
@@ -33,11 +33,10 @@ export default async function UserWorkoutLibraryPage({ searchParams }: { searchP
     );
   }
 
-  // Fetch ALL workout plans in the gym
+  // Fetch ALL workout plans across all gyms (global library)
   const { data: plans } = await supabaseAdmin
     .from('workout_plans')
-    .select('*, users:created_by(first_name, last_name)')
-    .eq('gym_id', user.gym_id)
+    .select('*, users:created_by(first_name, last_name), gyms:gym_id(name)')
     .order('created_at', { ascending: false });
 
   // Count how many members are using each plan
@@ -81,7 +80,7 @@ export default async function UserWorkoutLibraryPage({ searchParams }: { searchP
               Workout Library
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Browse all available workout programs in the gym
+              Browse all available workout programs across all gyms
             </p>
           </div>
         </div>
@@ -139,6 +138,14 @@ export default async function UserWorkoutLibraryPage({ searchParams }: { searchP
                     <p className="text-sm text-gray-300 line-clamp-2 mb-4 font-medium opacity-90">
                       {plan.description || 'Professional workout plan designed for results.'}
                     </p>
+
+                    {/* Gym Name Badge */}
+                    {plan.gyms?.name && (
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                        <span className="text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
                       <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">

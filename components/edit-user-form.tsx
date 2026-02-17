@@ -76,7 +76,7 @@ export default function EditUserForm({ user, role }: EditUserFormProps) {
         <div className="pt-3 sm:pt-4 border-t border-border">
           <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-foreground">Employment Details</h3>
           <div className="space-y-2">
-            <label className="text-xs sm:text-sm font-medium text-foreground">Monthly Salary ($)</label>
+            <label className="text-xs sm:text-sm font-medium text-foreground">Monthly Salary (₹)</label>
             <input
               type="number"
               name="salary"

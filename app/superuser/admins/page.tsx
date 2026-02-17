@@ -217,7 +217,7 @@ export default async function AdminsPage({ searchParams }: { searchParams: Promi
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-sm font-medium">
-                        ${revenuePerAdmin.toLocaleString()}
+                        ₹{revenuePerAdmin.toLocaleString()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground text-sm">

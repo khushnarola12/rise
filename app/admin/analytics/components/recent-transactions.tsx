@@ -24,7 +24,7 @@ export default async function RecentTransactions({ gymId }: { gymId: string }) {
                 <p className="text-xs text-muted-foreground">{new Date(t.transaction_date).toLocaleDateString()}</p>
               </div>
               <span className={`font-bold ${t.type === 'revenue' ? 'text-green-500' : 'text-red-500'}`}>
-                {t.type === 'revenue' ? '+' : '-'}${Number(t.amount).toLocaleString()}
+                {t.type === 'revenue' ? '+' : '-'}₹{Number(t.amount).toLocaleString()}
               </span>
             </div>
           ))
