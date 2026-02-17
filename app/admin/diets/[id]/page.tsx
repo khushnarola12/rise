@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Target, Utensils, Flame, ChefHat, Apple, Coffee, Moon, Cookie } from 'lucide-react';
 import Link from 'next/link';
 import { DeletePlanButton } from '@/components/delete-plan-button';
+import { CloneEditButton } from '@/components/clone-edit-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,22 +78,28 @@ export default async function AdminDietDetailPage({ params }: PageProps) {
               <Flame className="w-4 h-4" />
               <span className="font-medium">{plan.total_calories} kcal</span>
             </div>
-            {isOwnGymPlan && (
-              <>
-                <Link
-                  href={`/admin/diets/${id}/edit`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
-                >
-                  Edit Plan
-                </Link>
-                <DeletePlanButton
-                  planId={id}
-                  planType="diet"
-                  planName={plan.name}
-                  redirectPath="/admin/diets"
-                />
-              </>
+            {isOwnGymPlan ? (
+              <Link
+                href={`/admin/diets/${id}/edit`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
+              >
+                Edit Plan
+              </Link>
+            ) : (
+              <CloneEditButton
+                planId={id}
+                planType="diet"
+                userGymId={user.gym_id || ''}
+                userId={user.id}
+                editBasePath="/admin/diets"
+              />
             )}
+            <DeletePlanButton
+              planId={id}
+              planType="diet"
+              planName={plan.name}
+              redirectPath="/admin/diets"
+            />
           </div>
         </div>
       </div>

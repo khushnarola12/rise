@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Target, Dumbbell, Clock, Repeat, Timer } from 'luc
 import Link from 'next/link';
 import { YouTubeEmbed } from '@/components/youtube-embed';
 import { DeletePlanButton } from '@/components/delete-plan-button';
+import { CloneEditButton } from '@/components/clone-edit-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,22 +81,28 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
                 <span className="font-medium">{plan.duration_weeks} Weeks</span>
               </div>
             )}
-            {isOwnGymPlan && (
-              <>
-                <Link
-                  href={`/admin/workouts/${id}/edit`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
-                >
-                  Edit Plan
-                </Link>
-                <DeletePlanButton
-                  planId={id}
-                  planType="workout"
-                  planName={plan.name}
-                  redirectPath="/admin/workouts"
-                />
-              </>
+            {isOwnGymPlan ? (
+              <Link
+                href={`/admin/workouts/${id}/edit`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
+              >
+                Edit Plan
+              </Link>
+            ) : (
+              <CloneEditButton
+                planId={id}
+                planType="workout"
+                userGymId={user.gym_id || ''}
+                userId={user.id}
+                editBasePath="/admin/workouts"
+              />
             )}
+            <DeletePlanButton
+              planId={id}
+              planType="workout"
+              planName={plan.name}
+              redirectPath="/admin/workouts"
+            />
           </div>
         </div>
       </div>

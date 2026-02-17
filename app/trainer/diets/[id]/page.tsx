@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Target, Utensils, Flame } from 'lucide-react';
 import Link from 'next/link';
 import { DeletePlanButton } from '@/components/delete-plan-button';
+import { CloneEditButton } from '@/components/clone-edit-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,14 +66,21 @@ export default async function TrainerDietDetailPage({ params }: PageProps) {
                   <Flame className="w-4 h-4 text-orange-500" />
                   <span>{plan.total_calories} kcal</span>
                </div>
-               {isOwnGymPlan && (
-                 <DeletePlanButton
+               {!isOwnGymPlan && (
+                 <CloneEditButton
                    planId={id}
                    planType="diet"
-                   planName={plan.name}
-                   redirectPath="/trainer/diets"
+                   userGymId={user.gym_id || ''}
+                   userId={user.id}
+                   editBasePath="/admin/diets"
                  />
                )}
+               <DeletePlanButton
+                 planId={id}
+                 planType="diet"
+                 planName={plan.name}
+                 redirectPath="/trainer/diets"
+               />
             </div>
           </div>
         </div>

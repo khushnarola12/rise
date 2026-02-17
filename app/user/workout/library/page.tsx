@@ -1,6 +1,6 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Dumbbell, Calendar, Users, Target, ArrowLeft, Building2 } from 'lucide-react';
+import { Dumbbell, Calendar, Users, Target, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 
@@ -139,13 +139,6 @@ export default async function UserWorkoutLibraryPage({ searchParams }: { searchP
                       {plan.description || 'Professional workout plan designed for results.'}
                     </p>
 
-                    {/* Gym Name Badge */}
-                    {plan.gyms?.name && (
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Building2 className="w-3.5 h-3.5 text-sky-400" />
-                        <span className="text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
-                      </div>
-                    )}
 
                     <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
                       <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">

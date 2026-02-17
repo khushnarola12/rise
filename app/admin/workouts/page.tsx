@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCurrentUserData } from '@/lib/auth';
-import { Dumbbell, Plus, Calendar, Users, Target, Clock, Building2 } from 'lucide-react';
+import { Dumbbell, Plus, Calendar, Target, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { PlanActionsMenu } from '@/components/plan-actions-menu';
 import { URLSearchInput } from '@/components/url-search-input';
@@ -98,18 +98,16 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: Pro
                   {/* Animated Accent Line */}
                   <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.color} opacity-80 z-20 transition-all duration-500 group-hover:h-1.5 group-hover:opacity-100`} />
 
-                  {/* Top Right Actions - Only for own gym's plans */}
-                  {plan.gym_id === user.gym_id && (
-                    <div className="absolute top-3 right-3 z-20">
-                      <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
-                        <PlanActionsMenu 
-                          planId={plan.id} 
-                          planType="workout" 
-                          planName={plan.name}
-                        />
-                      </div>
+                  {/* Top Right Actions */}
+                  <div className="absolute top-3 right-3 z-20">
+                    <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
+                      <PlanActionsMenu 
+                        planId={plan.id} 
+                        planType="workout" 
+                        planName={plan.name}
+                      />
                     </div>
-                  )}
+                  </div>
 
                   {/* Content */}
                   <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-5 pt-16 sm:px-6 sm:pb-6 pointer-events-none">
@@ -139,20 +137,8 @@ export default async function WorkoutsPage({ searchParams }: { searchParams: Pro
                             {plan.duration_weeks} Weeks
                           </div>
                         )}
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
-                          By {plan.users?.first_name || 'Admin'}
-                        </div>
                       </div>
                     </div>
-
-                    {/* Gym Name Badge */}
-                    {plan.gyms?.name && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Building2 className="w-3 h-3 text-sky-400" />
-                        <span className="text-[10px] sm:text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </StaggerItem>

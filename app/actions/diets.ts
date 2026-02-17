@@ -210,3 +210,69 @@ export async function getDietPlan(planId: string) {
 
   return data;
 }
+
+export async function cloneDietPlan(planId: string, targetGymId: string, clonedBy: string) {
+  try {
+    // Fetch the original plan with meals
+    const original = await getDietPlan(planId);
+    if (!original) {
+      return { success: false, error: 'Plan not found' };
+    }
+
+    // Create the cloned plan
+    const { data: clonedPlan, error: planError } = await supabaseAdmin
+      .from('diet_plans')
+      .insert({
+        name: original.name,
+        description: original.description,
+        diet_preference: original.diet_preference,
+        total_calories: original.total_calories,
+        protein_grams: original.protein_grams,
+        carbs_grams: original.carbs_grams,
+        fat_grams: original.fat_grams,
+        gym_id: targetGymId,
+        created_by: clonedBy,
+      })
+      .select()
+      .single();
+
+    if (planError || !clonedPlan) {
+      console.error('Error cloning diet plan:', planError);
+      return { success: false, error: 'Failed to clone plan' };
+    }
+
+    // Clone meals
+    const meals = original.diet_plan_meals || [];
+    if (meals.length > 0) {
+      const clonedMeals = meals.map((meal: any) => ({
+        diet_plan_id: clonedPlan.id,
+        meal_name: meal.meal_name,
+        meal_type: meal.meal_type,
+        description: meal.description,
+        calories: meal.calories,
+        protein_g: meal.protein_g,
+        carbs_g: meal.carbs_g,
+        fats_g: meal.fats_g,
+        meal_order: meal.meal_order,
+      }));
+
+      const { error: mealError } = await supabaseAdmin
+        .from('diet_plan_meals')
+        .insert(clonedMeals);
+
+      if (mealError) {
+        console.error('Error cloning meals:', mealError);
+      }
+    }
+
+    revalidatePath('/admin/diets');
+    revalidatePath('/trainer/diets');
+    return { success: true, newPlanId: clonedPlan.id };
+  } catch (error) {
+    console.error('Error in cloneDietPlan:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+}

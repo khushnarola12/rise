@@ -198,3 +198,67 @@ export async function getWorkoutPlan(planId: string) {
 
   return data;
 }
+
+export async function cloneWorkoutPlan(planId: string, targetGymId: string, clonedBy: string) {
+  try {
+    // Fetch the original plan with exercises
+    const original = await getWorkoutPlan(planId);
+    if (!original) {
+      return { success: false, error: 'Plan not found' };
+    }
+
+    // Create the cloned plan
+    const { data: clonedPlan, error: planError } = await supabaseAdmin
+      .from('workout_plans')
+      .insert({
+        name: original.name,
+        description: original.description,
+        difficulty: original.difficulty,
+        duration_weeks: original.duration_weeks,
+        target_muscle_groups: original.target_muscle_groups,
+        gym_id: targetGymId,
+        created_by: clonedBy,
+      })
+      .select()
+      .single();
+
+    if (planError || !clonedPlan) {
+      console.error('Error cloning workout plan:', planError);
+      return { success: false, error: 'Failed to clone plan' };
+    }
+
+    // Clone exercises
+    const exercises = original.workout_exercises || [];
+    if (exercises.length > 0) {
+      const clonedExercises = exercises.map((ex: any) => ({
+        workout_plan_id: clonedPlan.id,
+        exercise_name: ex.exercise_name,
+        description: ex.description,
+        sets: ex.sets,
+        reps: ex.reps,
+        rest_seconds: ex.rest_seconds,
+        exercise_order: ex.exercise_order,
+        day: ex.day,
+        video_url: ex.video_url,
+      }));
+
+      const { error: exError } = await supabaseAdmin
+        .from('workout_exercises')
+        .insert(clonedExercises);
+
+      if (exError) {
+        console.error('Error cloning exercises:', exError);
+      }
+    }
+
+    revalidatePath('/admin/workouts');
+    revalidatePath('/trainer/workouts');
+    return { success: true, newPlanId: clonedPlan.id };
+  } catch (error) {
+    console.error('Error in cloneWorkoutPlan:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+}

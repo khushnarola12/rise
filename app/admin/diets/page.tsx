@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCurrentUserData } from '@/lib/auth';
-import { Plus, Utensils, Users, Flame, Apple, Beef, Building2 } from 'lucide-react';
+import { Plus, Utensils, Flame, Apple, Beef } from 'lucide-react';
 import Link from 'next/link';
 import { PlanActionsMenu } from '@/components/plan-actions-menu';
 import { URLSearchInput } from '@/components/url-search-input';
@@ -156,18 +156,16 @@ function DietPlanCard({ plan, index, userGymId }: { plan: any; index: number; us
         {/* Animated Accent Line */}
         <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.color} opacity-80 z-20 transition-all duration-500 group-hover:h-1.5 group-hover:opacity-100`} />
 
-        {/* Top Right Actions - Only for own gym's plans */}
-        {plan.gym_id === userGymId && (
-          <div className="absolute top-3 right-3 z-20">
-            <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
-              <PlanActionsMenu 
-                planId={plan.id} 
-                planType="diet" 
-                planName={plan.name}
-              />
-            </div>
+        {/* Top Right Actions */}
+        <div className="absolute top-3 right-3 z-20">
+          <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
+            <PlanActionsMenu 
+              planId={plan.id} 
+              planType="diet" 
+              planName={plan.name}
+            />
           </div>
-        )}
+        </div>
 
         {/* Top Left Badge */}
         <div className="absolute top-3 left-3 z-20 pointer-events-none">
@@ -198,22 +196,6 @@ function DietPlanCard({ plan, index, userGymId }: { plan: any; index: number; us
             {plan.description || 'Nutritious meal plan designed for your goals.'}
           </p>
 
-          <div className="flex items-center gap-3 border-t border-white/15 pt-3 mt-auto">
-            <div className="flex gap-3 text-[10px] sm:text-xs font-semibold text-gray-300 uppercase tracking-wide">
-              <div className="flex items-center gap-1">
-                <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
-                By {plan.users?.first_name || 'Admin'}
-              </div>
-            </div>
-          </div>
-
-          {/* Gym Name Badge */}
-          {plan.gyms?.name && (
-            <div className="flex items-center gap-1.5 mt-2">
-              <Building2 className="w-3 h-3 text-sky-400" />
-              <span className="text-[10px] sm:text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
-            </div>
-          )}
         </div>
       </div>
     </StaggerItem>

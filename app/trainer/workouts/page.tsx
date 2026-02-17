@@ -140,10 +140,6 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
                           <span className="text-foreground font-semibold">{usage.active}</span>
                           <span className="text-muted-foreground text-xs">active</span>
                         </div>
-                        <span className="text-border">•</span>
-                        <span className="text-xs text-muted-foreground">
-                          By {plan.users?.first_name || 'Admin'}
-                        </span>
                       </div>
                       <Link
                         href={`/trainer/workouts/${plan.id}`}
@@ -152,14 +148,6 @@ export default async function TrainerWorkoutsPage({ searchParams }: { searchPara
                         View →
                       </Link>
                     </div>
-
-                    {/* Gym Name Badge */}
-                    {plan.gyms?.name && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Building2 className="w-3.5 h-3.5 text-sky-500" />
-                        <span className="text-xs font-medium text-muted-foreground">{plan.gyms.name}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </StaggerItem>

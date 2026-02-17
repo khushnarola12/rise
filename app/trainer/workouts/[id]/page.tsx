@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { YouTubeEmbed } from '@/components/youtube-embed';
 import { DeletePlanButton } from '@/components/delete-plan-button';
+import { CloneEditButton } from '@/components/clone-edit-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,14 +66,21 @@ export default async function TrainerWorkoutDetailPage({ params }: PageProps) {
                 <span>{plan.duration_weeks} Weeks</span>
               </div>
             )}
-            {isOwnGymPlan && (
-              <DeletePlanButton
+            {!isOwnGymPlan && (
+              <CloneEditButton
                 planId={id}
                 planType="workout"
-                planName={plan.name}
-                redirectPath="/trainer/workouts"
+                userGymId={user.gym_id || ''}
+                userId={user.id}
+                editBasePath="/admin/workouts"
               />
             )}
+            <DeletePlanButton
+              planId={id}
+              planType="workout"
+              planName={plan.name}
+              redirectPath="/trainer/workouts"
+            />
           </div>
         </div>
       </div>

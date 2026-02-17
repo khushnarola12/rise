@@ -1,6 +1,6 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Utensils, Apple, Users, ArrowLeft, Search, Building2 } from 'lucide-react';
+import { Utensils, Apple, Users, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 
@@ -157,13 +157,6 @@ export default async function UserDietLibraryPage({ searchParams }: { searchPara
                         </div>
                     </div>
 
-                    {/* Gym Name Badge */}
-                    {plan.gyms?.name && (
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Building2 className="w-3.5 h-3.5 text-sky-400" />
-                        <span className="text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
-                      </div>
-                    )}
 
                     <div className="flex items-center justify-between border-t border-white/20 pt-4 mt-auto">
                       <div className="flex gap-4 text-xs font-bold text-gray-300 uppercase tracking-wide">
