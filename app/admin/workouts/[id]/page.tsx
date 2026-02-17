@@ -31,9 +31,8 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  if (plan.gym_id !== user.gym_id) {
-    return notFound();
-  }
+  // All plans are viewable in the global library
+  const isOwnGymPlan = plan.gym_id === user.gym_id;
 
   const exercises = plan.workout_exercises?.sort((a: any, b: any) => a.exercise_order - b.exercise_order) || [];
 
@@ -80,12 +79,14 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
                 <span className="font-medium">{plan.duration_weeks} Weeks</span>
               </div>
             )}
-            <Link
-              href={`/admin/workouts/${id}/edit`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
-            >
-              Edit Plan
-            </Link>
+            {isOwnGymPlan && (
+              <Link
+                href={`/admin/workouts/${id}/edit`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
+              >
+                Edit Plan
+              </Link>
+            )}
           </div>
         </div>
       </div>

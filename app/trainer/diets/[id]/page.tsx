@@ -24,10 +24,7 @@ export default async function TrainerDietDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Trainer can see plans from their gym
-  if (plan.gym_id !== user.gym_id) {
-    return notFound();
-  }
+  // All plans are viewable in the global library
 
   const meals = plan.diet_plan_meals?.sort((a: any, b: any) => a.meal_order - b.meal_order) || [];
 

@@ -26,10 +26,7 @@ export default async function TrainerWorkoutDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Verify access (same gym)
-  if (plan.gym_id !== user.gym_id) {
-    return notFound();
-  }
+  // All plans are viewable in the global library
 
   const exercises = plan.workout_exercises?.sort((a: any, b: any) => a.exercise_order - b.exercise_order) || [];
 

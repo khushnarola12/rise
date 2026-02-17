@@ -38,9 +38,8 @@ export default async function AdminDietDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  if (plan.gym_id !== user.gym_id) {
-    return notFound();
-  }
+  // All plans are viewable in the global library
+  const isOwnGymPlan = plan.gym_id === user.gym_id;
 
   const meals = plan.diet_plan_meals?.sort((a: any, b: any) => a.meal_order - b.meal_order) || [];
 
@@ -77,12 +76,14 @@ export default async function AdminDietDetailPage({ params }: PageProps) {
               <Flame className="w-4 h-4" />
               <span className="font-medium">{plan.total_calories} kcal</span>
             </div>
-            <Link
-              href={`/admin/diets/${id}/edit`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
-            >
-              Edit Plan
-            </Link>
+            {isOwnGymPlan && (
+              <Link
+                href={`/admin/diets/${id}/edit`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
+              >
+                Edit Plan
+              </Link>
+            )}
           </div>
         </div>
       </div>
