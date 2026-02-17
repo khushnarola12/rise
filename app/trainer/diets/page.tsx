@@ -1,6 +1,6 @@
 import { getCurrentUserData } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { Utensils, Plus, Flame, Users, Apple, Beef } from 'lucide-react';
+import { Utensils, Plus, Flame, Users, Apple, Beef, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { URLSearchInput } from '@/components/url-search-input';
 import { ScrollReveal, StaggerContainer, StaggerItem, PageTransition } from '@/components/scroll-animations';
@@ -33,8 +33,7 @@ export default async function TrainerDietsPage({ searchParams }: { searchParams:
 
   const { data: plans } = await supabaseAdmin
     .from('diet_plans')
-    .select('*, users:created_by(first_name, last_name)')
-    .eq('gym_id', user.gym_id)
+    .select('*, users:created_by(first_name, last_name), gyms:gym_id(name)')
     .order('created_at', { ascending: false });
 
   const planIds = plans?.map(p => p.id) || [];
@@ -69,7 +68,7 @@ export default async function TrainerDietsPage({ searchParams }: { searchParams:
               My Diet Plans
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Create and manage nutrition programs for your members
+              Browse and manage nutrition programs across all gyms
             </p>
           </div>
           <Link
@@ -168,6 +167,14 @@ export default async function TrainerDietsPage({ searchParams }: { searchParams:
                         View →
                       </Link>
                     </div>
+
+                    {/* Gym Name Badge */}
+                    {plan.gyms?.name && (
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Building2 className="w-3.5 h-3.5 text-sky-500" />
+                        <span className="text-xs font-medium text-muted-foreground">{plan.gyms.name}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </StaggerItem>

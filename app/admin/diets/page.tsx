@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getCurrentUserData } from '@/lib/auth';
-import { Plus, Utensils, Users, Flame, Apple, Beef } from 'lucide-react';
+import { Plus, Utensils, Users, Flame, Apple, Beef, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { PlanActionsMenu } from '@/components/plan-actions-menu';
 import { URLSearchInput } from '@/components/url-search-input';
@@ -26,12 +26,11 @@ const DIET_PREF_CONFIG = {
 export default async function DietPlansPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
   const { q } = await searchParams;
   const user = await getCurrentUserData();
-  if (!user?.gym_id) return null;
+  if (!user) return null;
 
   let query = supabaseAdmin
     .from('diet_plans')
-    .select('*, users(first_name, last_name)')
-    .eq('gym_id', user.gym_id);
+    .select('*, users(first_name, last_name), gyms:gym_id(name)')
 
   if (q) {
     query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
@@ -50,7 +49,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Diet Plans</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage nutrition programs</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage nutrition programs across all gyms</p>
           </div>
           <Link
             href="/admin/diets/new"
@@ -85,6 +84,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
               dotGlow="shadow-[0_0_10px_rgba(16,185,129,0.4)]"
               plans={vegPlans}
               baseIndex={0}
+              userGymId={user.gym_id}
             />
           )}
           {nonVegPlans.length > 0 && (
@@ -94,6 +94,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
               dotGlow="shadow-[0_0_10px_rgba(244,63,94,0.4)]"
               plans={nonVegPlans}
               baseIndex={vegPlans.length}
+              userGymId={user.gym_id}
             />
           )}
           {customPlans.length > 0 && (
@@ -103,6 +104,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
               dotGlow="shadow-[0_0_10px_rgba(245,158,11,0.4)]"
               plans={customPlans}
               baseIndex={vegPlans.length + nonVegPlans.length}
+              userGymId={user.gym_id}
             />
           )}
         </div>
@@ -111,7 +113,7 @@ export default async function DietPlansPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function DietSection({ title, dotColor, dotGlow, plans, baseIndex }: { title: string; dotColor: string; dotGlow: string; plans: any[]; baseIndex: number }) {
+function DietSection({ title, dotColor, dotGlow, plans, baseIndex, userGymId }: { title: string; dotColor: string; dotGlow: string; plans: any[]; baseIndex: number; userGymId: string | null }) {
   return (
     <section>
       <ScrollReveal>
@@ -122,13 +124,13 @@ function DietSection({ title, dotColor, dotGlow, plans, baseIndex }: { title: st
         </h2>
       </ScrollReveal>
       <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        {plans.map((plan, i) => <DietPlanCard key={plan.id} plan={plan} index={baseIndex + i} />)}
+        {plans.map((plan, i) => <DietPlanCard key={plan.id} plan={plan} index={baseIndex + i} userGymId={userGymId} />)}
       </StaggerContainer>
     </section>
   );
 }
 
-function DietPlanCard({ plan, index }: { plan: any; index: number }) {
+function DietPlanCard({ plan, index, userGymId }: { plan: any; index: number; userGymId: string | null }) {
   const pref = (plan.diet_preference as keyof typeof DIET_PREF_CONFIG) || 'custom';
   const config = DIET_PREF_CONFIG[pref] || DIET_PREF_CONFIG.custom;
   const IconComponent = config.icon;
@@ -154,16 +156,18 @@ function DietPlanCard({ plan, index }: { plan: any; index: number }) {
         {/* Animated Accent Line */}
         <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.color} opacity-80 z-20 transition-all duration-500 group-hover:h-1.5 group-hover:opacity-100`} />
 
-        {/* Top Right Actions */}
-        <div className="absolute top-3 right-3 z-20">
-          <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
-            <PlanActionsMenu 
-              planId={plan.id} 
-              planType="diet" 
-              planName={plan.name}
-            />
+        {/* Top Right Actions - Only for own gym's plans */}
+        {plan.gym_id === userGymId && (
+          <div className="absolute top-3 right-3 z-20">
+            <div className="bg-black/40 hover:bg-black/70 backdrop-blur-md rounded-lg p-1 transition-all duration-200 border border-white/10 hover:border-white/20">
+              <PlanActionsMenu 
+                planId={plan.id} 
+                planType="diet" 
+                planName={plan.name}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Top Left Badge */}
         <div className="absolute top-3 left-3 z-20 pointer-events-none">
@@ -202,6 +206,14 @@ function DietPlanCard({ plan, index }: { plan: any; index: number }) {
               </div>
             </div>
           </div>
+
+          {/* Gym Name Badge */}
+          {plan.gyms?.name && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <Building2 className="w-3 h-3 text-sky-400" />
+              <span className="text-[10px] sm:text-xs font-semibold text-sky-300 tracking-wide">{plan.gyms.name}</span>
+            </div>
+          )}
         </div>
       </div>
     </StaggerItem>

@@ -146,8 +146,8 @@ export default async function AdminDashboard() {
   ] = await Promise.all([
     supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'user').eq('gym_id', user?.gym_id),
     supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('role', 'trainer').eq('gym_id', user?.gym_id),
-    supabaseAdmin.from('workout_plans').select('*', { count: 'exact', head: true }).eq('gym_id', user?.gym_id),
-    supabaseAdmin.from('diet_plans').select('*', { count: 'exact', head: true }).eq('gym_id', user?.gym_id),
+    supabaseAdmin.from('workout_plans').select('*', { count: 'exact', head: true }),
+    supabaseAdmin.from('diet_plans').select('*', { count: 'exact', head: true }),
     supabaseAdmin
       .from('attendance')
       .select('*, users(first_name, last_name)')
