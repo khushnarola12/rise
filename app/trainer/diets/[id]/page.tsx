@@ -3,6 +3,7 @@ import { getDietPlan } from '@/app/actions/diets';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Target, Utensils, Flame } from 'lucide-react';
 import Link from 'next/link';
+import { DeletePlanButton } from '@/components/delete-plan-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,7 @@ export default async function TrainerDietDetailPage({ params }: PageProps) {
   }
 
   // All plans are viewable in the global library
+  const isOwnGymPlan = plan.gym_id === user.gym_id;
 
   const meals = plan.diet_plan_meals?.sort((a: any, b: any) => a.meal_order - b.meal_order) || [];
 
@@ -63,13 +65,14 @@ export default async function TrainerDietDetailPage({ params }: PageProps) {
                   <Flame className="w-4 h-4 text-orange-500" />
                   <span>{plan.total_calories} kcal</span>
                </div>
-               {/* Trainer doesn't necessarily edit via this page, but maybe they should? 
-                   Assuming no Edit link for now to match other trainer pages unless requested.
-                   Wait, trainer CAN create diets, so they should be able to edit.
-                   I'll check if trainer/diets/edit exists.
-                   Admin has [id]/edit. Trainer/diets/[id]/edit might not exist.
-                   I won't add Edit link to minimize 404s until verified.
-                */}
+               {isOwnGymPlan && (
+                 <DeletePlanButton
+                   planId={id}
+                   planType="diet"
+                   planName={plan.name}
+                   redirectPath="/trainer/diets"
+                 />
+               )}
             </div>
           </div>
         </div>

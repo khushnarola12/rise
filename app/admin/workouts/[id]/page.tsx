@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Target, Dumbbell, Clock, Repeat, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { YouTubeEmbed } from '@/components/youtube-embed';
+import { DeletePlanButton } from '@/components/delete-plan-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,12 +81,20 @@ export default async function AdminWorkoutDetailPage({ params }: PageProps) {
               </div>
             )}
             {isOwnGymPlan && (
-              <Link
-                href={`/admin/workouts/${id}/edit`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
-              >
-                Edit Plan
-              </Link>
+              <>
+                <Link
+                  href={`/admin/workouts/${id}/edit`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:scale-[0.97] transition-all text-sm font-medium shadow-lg shadow-primary/20"
+                >
+                  Edit Plan
+                </Link>
+                <DeletePlanButton
+                  planId={id}
+                  planType="workout"
+                  planName={plan.name}
+                  redirectPath="/admin/workouts"
+                />
+              </>
             )}
           </div>
         </div>

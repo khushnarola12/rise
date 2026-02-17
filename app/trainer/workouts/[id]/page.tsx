@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Target, PlayCircle, Dumbbell } from 'lucide-react'
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { YouTubeEmbed } from '@/components/youtube-embed';
+import { DeletePlanButton } from '@/components/delete-plan-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,7 @@ export default async function TrainerWorkoutDetailPage({ params }: PageProps) {
   }
 
   // All plans are viewable in the global library
+  const isOwnGymPlan = plan.gym_id === user.gym_id;
 
   const exercises = plan.workout_exercises?.sort((a: any, b: any) => a.exercise_order - b.exercise_order) || [];
 
@@ -62,6 +64,14 @@ export default async function TrainerWorkoutDetailPage({ params }: PageProps) {
                 <Calendar className="w-4 h-4 text-blue-500" />
                 <span>{plan.duration_weeks} Weeks</span>
               </div>
+            )}
+            {isOwnGymPlan && (
+              <DeletePlanButton
+                planId={id}
+                planType="workout"
+                planName={plan.name}
+                redirectPath="/trainer/workouts"
+              />
             )}
           </div>
         </div>
